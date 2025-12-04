@@ -1,0 +1,14 @@
+# .gitignore
+
+# File di sistema e IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Configurazione sensibile (opzionale per l'esame, ma best practice)
+# config.php 
+
+# Uploads temporanei
+/uploads/*
+!/uploads/.gitkeep
