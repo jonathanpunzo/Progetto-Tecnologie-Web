@@ -60,14 +60,15 @@ INSERT INTO faqs (question, answer) VALUES
 ('Che formati di file accettate?', 'Accettiamo immagini (JPG, PNG) e PDF.'),
 ('Non ricordo le credenziali come posso recuperarle?', 'Puoi invarci una mail alla seguente casella postale : help@ifantastici4.it');
 
--- UTENTI PREDEFINITI (Password hashata provvisoria per test)
--- Admin (email: admin@test.com)
-INSERT INTO users (name, email, password, role) VALUES 
-('Admin', 'admin@test.com', 'admin', 'admin');
+-- UTENTI PREDEFINITI (bcrypt)
+-- Password admin: admin
+INSERT INTO users (name, email, password, role) VALUES
+('Admin', 'admin@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'admin');
 
--- Utente (email: user@test.com)
-INSERT INTO users (name, email, password, role) VALUES 
-('Utente', 'user@test.com', 'utente', 'user');
+-- Password utente: utente
+INSERT INTO users (name, email, password, role) VALUES
+('Utente', 'user@test.com', '$2b$10$hzRyMYnojJJ5ezGOC3ESVOgyxbHEwrZOKYcKR5k5a0j1OFS9ufUeW', 'user');
+
 
 -- TICKET DI PROVA
 INSERT INTO tickets (user_id, title, description, priority, category) VALUES 
