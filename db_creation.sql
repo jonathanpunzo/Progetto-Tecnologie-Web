@@ -63,11 +63,11 @@ INSERT INTO faqs (question, answer) VALUES
 -- UTENTI PREDEFINITI (Password hashata provvisoria per test)
 -- Admin (email: admin@test.com)
 INSERT INTO users (name, email, password, role) VALUES 
-('Admin ifantastici4', 'admin@test.com', '$2y$10$C8.6hG9.3/7w8wX.1y2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7', 'admin');
+('Admin', 'admin@test.com', 'admin', 'admin');
 
 -- Utente (email: user@test.com)
 INSERT INTO users (name, email, password, role) VALUES 
-('Utente Test', 'user@test.com', '$2y$10$C8.6hG9.3/7w8wX.1y2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7', 'user');
+('Utente', 'user@test.com', 'utente', 'user');
 
 -- TICKET DI PROVA
 INSERT INTO tickets (user_id, title, description, priority, category) VALUES 
