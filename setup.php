@@ -1,54 +1,158 @@
 <?php
-// CONFIGURAZIONE DEL DATABASE
-// Qui inseriamo il nome specifico scelto dal tuo gruppo
-$host = 'localhost';
-$db   = 'gruppo_ifantastici4'; // ECCOLO QUI! Il nome scelto da voi
-$user = 'www';
-$pass = 'www';
+/**
+ * setup.php — Tecnologie Web
+ * DB richiesto dalla prof: gruppo_ifantastici4
+ * Credenziali richieste: user www / pass www
+ *
+ * Opzionale (per creare DB/ruolo automaticamente):
+ *   DB_ADMIN_USER=postgres
+ *   DB_ADMIN_PASS=...
+ */
 
-// Un po' di stile per rendere la pagina carina
+declare(strict_types=1);
+header('Content-Type: text/html; charset=utf-8');
+
+function env(string $k, ?string $default = null): ?string {
+    $v = getenv($k);
+    return ($v === false || $v === '') ? $default : $v;
+}
+function h(string $s): string { return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+function out(string $html): void {
+    echo "<div style='margin:8px 0; line-height:1.35; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;'>$html</div>";
+}
+
+function pdoConnect(string $host, string $port, string $dbname, string $user, string $pass): PDO {
+    $dsn = "pgsql:host={$host};port={$port};dbname={$dbname}";
+    return new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+}
+
+function dbExists(PDO $pdo, string $dbName): bool {
+    $st = $pdo->prepare("SELECT 1 FROM pg_database WHERE datname = :d");
+    $st->execute([':d' => $dbName]);
+    return (bool)$st->fetchColumn();
+}
+
+function roleExists(PDO $pdo, string $role): bool {
+    $st = $pdo->prepare("SELECT 1 FROM pg_roles WHERE rolname = :r");
+    $st->execute([':r' => $role]);
+    return (bool)$st->fetchColumn();
+}
+
+function ensureWwwRole(PDO $pdoAdmin): void {
+    if (!roleExists($pdoAdmin, 'www')) {
+        $pdoAdmin->exec("CREATE ROLE www LOGIN PASSWORD 'www'");
+    } else {
+        // utile su PC diversi: forza password corretta
+        $pdoAdmin->exec("ALTER ROLE www WITH LOGIN PASSWORD 'www'");
+    }
+}
+
+function createDb(PDO $pdoAdmin, string $dbName): void {
+    $safeDb = str_replace('"', '""', $dbName);
+    $pdoAdmin->exec('CREATE DATABASE "' . $safeDb . '" OWNER "www"');
+}
+
+function runSql(PDO $pdo, string $sqlPath): void {
+    if (!file_exists($sqlPath)) {
+        throw new RuntimeException("File SQL non trovato: {$sqlPath}");
+    }
+    $sql = file_get_contents($sqlPath);
+    if ($sql === false || trim($sql) === '') {
+        throw new RuntimeException("File SQL vuoto/non leggibile: {$sqlPath}");
+    }
+
+    // Prova exec unica
+    try {
+        $pdo->exec($sql);
+        return;
+    } catch (PDOException $e) {
+        // Fallback split semplice
+        $parts = preg_split("/;\s*(\r?\n|$)/", $sql);
+        if (!$parts) throw $e;
+        foreach ($parts as $p) {
+            $p = trim($p);
+            if ($p === '') continue;
+            $pdo->exec($p);
+        }
+    }
+}
+
+/* ===== CONFIG ===== */
+$host = env('DB_HOST', 'localhost');
+$port = env('DB_PORT', '5432');
+
+// ✅ Nome DB fissato come richiesto dalla prof
+$dbName = env('DB_NAME', 'gruppo_ifantastici4');
+
+// ✅ Credenziali applicazione
+$appUser = 'www';
+$appPass = 'www';
+
+// Admin opzionale
+$adminUser = env('DB_ADMIN_USER', null);
+$adminPass = env('DB_ADMIN_PASS', null);
+
+// File SQL
+$sqlFile = __DIR__ . DIRECTORY_SEPARATOR . 'db_creation.sql';
+
+/* ===== UI semplice ===== */
 echo "<style>
-    body{font-family: Arial, sans-serif; background: #f0f2f5; padding: 40px;}
-    .container{max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
-    h1{color: #1a73e8; margin-top: 0;}
-    .success{color: #059669; background: #d1fae5; padding: 10px; border-radius: 5px; margin: 10px 0;}
-    .error{color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 5px;}
-    a.btn{display: inline-block; background: #1a73e8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px;}
-    a.btn:hover{background: #1557b0;}
+body{background:#f4f6f8;padding:26px}
+.box{max-width:860px;margin:0 auto;background:#fff;border-radius:12px;padding:20px;box-shadow:0 8px 25px rgba(0,0,0,.06)}
+.ok{background:#d1fae5;color:#065f46;padding:10px;border-radius:8px}
+.warn{background:#fff7ed;color:#9a3412;padding:10px;border-radius:8px}
+.err{background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px}
+pre{background:#f6f6f6;padding:12px;border-radius:8px;overflow:auto}
+code{background:#f6f6f6;padding:2px 6px;border-radius:6px}
 </style>";
 
-echo "<div class='container'>";
-echo "<h1>🚀 Installazione Database</h1>";
-echo "<p>Sto configurando il database <strong>$db</strong> per il gruppo <strong>ifantastici4</strong>...</p>";
+echo "<div class='box'>";
+out("<h2 style='margin:0 0 8px 0;'>Setup Database</h2>");
+out("<b>Target DB:</b> <code>" . h($dbName) . "</code> &nbsp; <b>User:</b> <code>www</code>/<code>www</code>");
+out("<b>Host:</b> <code>" . h($host) . ":" . h($port) . "</code>");
 
 try {
-    // 1. TENTATIVO DI CONNESSIONE
-    $dsn = "pgsql:host=$host;port=5432;dbname=$db";
-    $pdo = new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-    
-    // 2. LETTURA DEL FILE SQL
-    $sql_file = 'db_creation.sql';
-    if (!file_exists($sql_file)) {
-        throw new Exception("❌ ERRORE: Non trovo il file '$sql_file'. Assicurati che sia nella stessa cartella di questo file.");
+    $serviceDb = 'postgres';
+    $canAdmin = ($adminUser !== null && $adminPass !== null);
+
+    if ($canAdmin) {
+        out("➡️ Connessione admin a <code>{$serviceDb}</code>…");
+        $pdoAdmin = pdoConnect($host, $port, $serviceDb, $adminUser, $adminPass);
+
+        out("➡️ Controllo/creazione ruolo <code>www</code>…");
+        ensureWwwRole($pdoAdmin);
+
+        if (!dbExists($pdoAdmin, $dbName)) {
+            out("➡️ DB non trovato: lo creo con owner <code>www</code>…");
+            createDb($pdoAdmin, $dbName);
+            out("<div class='ok'>✅ Database creato.</div>");
+        } else {
+            out("<div class='ok'>✅ Database già esistente.</div>");
+        }
+    } else {
+        out("<div class='warn'>⚠️ Admin non configurato. Se il DB non esiste, va creato manualmente (vedi istruzioni sotto se fallisce).</div>");
     }
-    
-    $sql_content = file_get_contents($sql_file);
-    
-    // 3. ESECUZIONE (INSTALLAZIONE)
-    $pdo->exec($sql_content);
-    
-    echo "<div class='success'>✅ Tabelle create con successo!</div>";
-    echo "<div class='success'>✅ Dati di prova inseriti!</div>";
-    echo "<p>Il sistema è pronto.</p>";
-    echo "<a href='index.php' class='btn'>Vai alla Home</a>"; // index.php ancora non esiste, darà errore se ci clicchi ora, è normale.
+
+    out("➡️ Connessione al DB target come <code>www</code>…");
+    $pdo = pdoConnect($host, $port, $dbName, $appUser, $appPass);
+
+    out("➡️ Esecuzione <code>db_creation.sql</code>…");
+    $pdo->beginTransaction();
+    runSql($pdo, $sqlFile);
+    $pdo->commit();
+
+    out("<div class='ok'>🎉 Setup completato: tabelle e dati installati.</div>");
+    out("👉 Ora puoi aprire <code>index.php</code>.");
 
 } catch (PDOException $e) {
-    echo "<div class='error'>❌ ERRORE DATABASE:</div>";
-    echo "<p>" . $e->getMessage() . "</p>";
-    echo "<p><small>Suggerimento: Hai creato il database vuoto 'ifantastici4' su pgAdmin?</small></p>";
-} catch (Exception $e) {
-    echo "<div class='error'>❌ ERRORE GENERICO:</div>";
-    echo "<p>" . $e->getMessage() . "</p>";
+    out("<div class='err'><b>❌ Errore:</b> " . h($e->getMessage()) . "</div>");
+
+    out("<div class='warn'><b>Se l’errore è “database does not exist”</b>, crea DB e utente così (come admin, es. postgres) e poi ricarica setup.php:</div>");
+    echo "<pre>CREATE ROLE www LOGIN PASSWORD 'www';
+CREATE DATABASE \"{$dbName}\" OWNER \"www\";</pre>";
+
+} catch (Throwable $t) {
+    out("<div class='err'><b>❌ Errore generale:</b> " . h($t->getMessage()) . "</div>");
 }
+
 echo "</div>";
-?>
