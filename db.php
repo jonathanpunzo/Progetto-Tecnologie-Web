@@ -1,16 +1,17 @@
 <?php
 // FILE: db.php
-$host = 'localhost';
-$port = '5432';
-$db   = 'gruppo_ifantastici4'; // Il nome che abbiamo visto nel tuo setup
+
+$host = '127.0.0.1';   // meglio di 'localhost' per evitare IPv6 ::1
+$port = '5432';        // se in pgAdmin è diversa, cambia qui
+$db   = 'gruppo_ifantastici4';
 $user = 'www';
 $pass = 'www';
 
-$connection_string = "host=$host port=$port dbname=$db user=$user password=$pass";
+$connStr = "host=$host port=$port dbname=$db user=$user password=$pass";
 
-$db_conn = pg_connect($connection_string);
+$db_conn = pg_connect($connStr);
 
 if (!$db_conn) {
-    die("<h1>Errore Database</h1><p>Impossibile connettersi al database '$db'.</p>");
+    die("Errore Database<br>Impossibile connettersi al database '$db'.<br>" . pg_last_error());
 }
 ?>
