@@ -1,0 +1,34 @@
+\set ON_ERROR_STOP on
+-- ==========================================================
+-- 00_create_role_and_db_ifantastici4.psql
+-- Script PER psql (consigliato): crea ruolo + database se mancanti.
+--
+-- Uso (Windows):
+--   "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d postgres -f 00_create_role_and_db_ifantastici4.psql
+--
+-- Uso (Linux/macOS):
+--   psql -U postgres -d postgres -f ./00_create_role_and_db_ifantastici4.psql
+-- ==========================================================
+
+\set db_name   'gruppo_ifantastici4'
+\set app_user  'www'
+\set app_pass  'www'
+
+-- 1) Crea ruolo applicativo se non esiste
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'app_user') THEN
+        EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', :'app_user', :'app_pass');
+    END IF;
+END $$;
+
+-- 2) Crea database se non esiste (psql-specific: \gexec)
+SELECT format('CREATE DATABASE %I OWNER %I ENCODING ''UTF8''', :'db_name', :'app_user')
+WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = :'db_name')
+\gexec
+
+-- 3) Privilegi espliciti
+GRANT ALL PRIVILEGES ON DATABASE :"db_name" TO :"app_user";
+
+\echo
+\echo '✅ Database pronto: ' :db_name ' (owner=' :app_user ')'
