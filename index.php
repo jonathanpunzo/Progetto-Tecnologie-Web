@@ -14,15 +14,6 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
     <meta charset="UTF-8">
     <title>Dashboard - HelpDesk</title>
     <link rel="stylesheet" href="style.css">
-    <!-- <style>
-        /* CSS temporaneo per la tabella, poi lo spostiamo in style.css */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .status-open { color: green; font-weight: bold; }
-        .status-closed { color: red; }
-        .btn-new { background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; }
-    </style> -->
 </head>
 <body>
 

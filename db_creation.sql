@@ -58,8 +58,12 @@ ALTER TABLE messages OWNER TO www;
 INSERT INTO faqs (question, answer) VALUES 
 ('Come posso registrarmi?', 'Clicca sul pulsante Accedi/Registrati in alto a destra.'),
 ('Che formati di file accettate?', 'Accettiamo immagini (JPG, PNG) e PDF.'),
-('Non ricordo le credenziali come posso recuperarle?', 'Puoi invarci una mail alla seguente casella postale : help@ifantastici4.it');
-
+('Non ricordo le credenziali come posso recuperarle?', 'Puoi invarci una mail alla seguente casella postale : help@ifantastici4.it'),
+('Posso modificare un ticket dopo averlo inviato?', 'No, non è possibile modificare la descrizione originale. Tuttavia, puoi aggiungere dettagli o correzioni scrivendo un nuovo messaggio nella chat del ticket.'),
+('Quali sono i tempi di risposta?', 'Le tempistiche dipendono dalla priorità assegnata. Per le urgenze interveniamo subito, per le priorità medie o basse solitamente entro 24-48 ore.'),
+('Cosa significano gli stati del ticket?', 'APERTO: Segnalazione ricevuta. IN LAVORAZIONE: Un tecnico sta analizzando il problema. RISOLTO: Il problema è stato fixato. CHIUSO: La pratica è archiviata.'),
+('Ho sbagliato categoria, cosa faccio?', 'Non preoccuparti. Se un amministratore nota che la categoria è errata (es. Hardware invece di Software), provvederà a gestirlo comunque o a reindirizzarlo al reparto corretto.'),
+('C''è un limite per gli allegati?', 'Sì, per garantire le prestazioni del server ti chiediamo di caricare file di dimensioni contenute (max 5MB). Se necessario, usa formati compressi come ZIP.');
 -- UTENTI PREDEFINITI (bcrypt)
 -- Password admin: admin
 INSERT INTO users (name, email, password, role) VALUES
@@ -77,4 +81,5 @@ INSERT INTO users (name, email, password, role) VALUES
 -- TICKET DI PROVA
 INSERT INTO tickets (user_id, title, description, priority, category) VALUES 
 (2, 'Problema Accesso', 'Non riesco a resettare la password.', 'medium', 'Account');
+INSERT INTO tickets (user_id, title, description, priority, category) VALUES 
 (3, 'Problema Hardware', 'Il display evidenzia un malfunzionamento.', 'urgent', 'Account');
