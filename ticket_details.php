@@ -40,7 +40,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['new_status']) && $_SES
     exit;
 }
 
-// 4. MESSAGGI
+// 4. GESTIONE ELIMINAZIONE TICKET (NUOVO - Solo Admin)
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_ticket']) && $_SESSION['user_role'] == 'admin') {
+    // Cancelliamo il ticket (grazie a ON DELETE CASCADE nel DB, si cancellano anche i messaggi)
+    $q_del = "DELETE FROM tickets WHERE id = $ticket_id";
+    pg_query($db_conn, $q_del);
+    
+    // Redirect alla home perché il ticket non esiste più
+    header("Location: index.php");
+    exit;
+}
+
+// 5. RECUPERO MESSAGGI
 $query_msgs = "SELECT m.*, u.name, u.role FROM messages m JOIN users u ON m.user_id = u.id WHERE ticket_id = $ticket_id ORDER BY m.created_at ASC";
 $res_msgs = pg_query($db_conn, $query_msgs);
 ?>
@@ -50,8 +61,19 @@ $res_msgs = pg_query($db_conn, $query_msgs);
 <head>
     <meta charset="UTF-8">
     <title>Ticket #<?php echo $ticket_id; ?></title>
-    <link rel="stylesheet" href="ticket_details_style.css">
+    <link rel="stylesheet" href="style.css">
     <style>
+        /* CSS LOCALE PER LA CHAT */
+        .chat-box {
+            height: 400px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
+        }
         .closed-notice {
             background-color: #fee2e2; color: #dc2626; padding: 15px;
             text-align: center; font-weight: bold; border-radius: 5px;
@@ -85,16 +107,27 @@ $res_msgs = pg_query($db_conn, $query_msgs);
 
     <?php if($_SESSION['user_role'] == 'admin'): ?>
         <div style="background: #2c3e50; color: white; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
-            <form method="POST" style="display:flex; align-items:center; gap: 10px;">
+            
+            <form method="POST" style="margin-bottom: 10px;">
                 <label>Gestione Ticket:</label>
-                <select name="new_status" style="width: auto; margin: 0; color: black;">
-                    <option value="open" <?php echo ($ticket['status']=='open')?'selected':''; ?>>Aperto</option>
-                    <option value="in-progress" <?php echo ($ticket['status']=='in-progress')?'selected':''; ?>>In Lavorazione</option>
-                    <option value="resolved" <?php echo ($ticket['status']=='resolved')?'selected':''; ?>>Risolto</option>
-                    <option value="closed" <?php echo ($ticket['status']=='closed')?'selected':''; ?>>Chiuso</option>
-                </select>
-                <button type="submit" class="btn-style" style="border:1px solid white;">Aggiorna Stato</button>
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <select name="new_status" style="width: auto; margin: 0; color: black; flex:1;">
+                        <option value="open" <?php echo ($ticket['status']=='open')?'selected':''; ?>>Aperto</option>
+                        <option value="in-progress" <?php echo ($ticket['status']=='in-progress')?'selected':''; ?>>In Lavorazione</option>
+                        <option value="resolved" <?php echo ($ticket['status']=='resolved')?'selected':''; ?>>Risolto</option>
+                        <option value="closed" <?php echo ($ticket['status']=='closed')?'selected':''; ?>>Chiuso</option>
+                    </select>
+                    <button type="submit" class="btn-style" style="border:1px solid white;">Aggiorna</button>
+                </div>
             </form>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2);">
+
+            <form method="POST" onsubmit="return confirm('⚠️ Sei sicuro di voler ELIMINARE definitivamente questo ticket?\nQuesta azione non può essere annullata.');">
+                <input type="hidden" name="delete_ticket" value="1">
+                <button type="submit" class="btn-delete">🗑️ Elimina Ticket</button>
+            </form>
+
         </div>
     <?php endif; ?>
 
@@ -103,7 +136,6 @@ $res_msgs = pg_query($db_conn, $query_msgs);
     <?php endif; ?>
 
     <h3>Cronologia Conversazione</h3>
-    
     <div class="chat-box">
         <?php while($msg = pg_fetch_assoc($res_msgs)): 
             $is_admin = ($msg['role'] == 'admin');

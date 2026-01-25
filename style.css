@@ -265,3 +265,23 @@ textarea {
     animation: beat 1s infinite alternate;
 }
 @keyframes beat { to { transform: scale(1.1); } }
+
+
+/* --- BOTTONE ELIMINA (Rosso) --- */
+.btn-delete {
+    background-color: #dc3545; /* Rosso */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    width: 100%;
+    margin-top: 15px; /* Spazio dal bottone sopra */
+    transition: background 0.2s;
+    font-weight: bold;
+}
+
+.btn-delete:hover {
+    background-color: #c82333; /* Rosso più scuro */
+}
