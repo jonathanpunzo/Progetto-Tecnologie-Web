@@ -69,7 +69,11 @@ INSERT INTO users (name, email, password, role) VALUES
 INSERT INTO users (name, email, password, role) VALUES
 ('Utente', 'user@test.com', '$2b$10$hzRyMYnojJJ5ezGOC3ESVOgyxbHEwrZOKYcKR5k5a0j1OFS9ufUeW', 'user');
 
+INSERT INTO users (name, email, password, role) VALUES
+('Utente2', 'user2@test.com', '$2y$10$EbgA8bYblfe6OfiLBtT3GeBNrPKxV3McfL0AmbsXqLbhX3R5RgcbK', 'user');
+
 
 -- TICKET DI PROVA
 INSERT INTO tickets (user_id, title, description, priority, category) VALUES 
 (2, 'Problema Accesso', 'Non riesco a resettare la password.', 'medium', 'Account');
+(3, 'Problema Hardware', 'Il display evidenzia un malfunzionamento.', 'urgent', 'Account');
