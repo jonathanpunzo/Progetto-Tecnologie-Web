@@ -69,6 +69,7 @@ INSERT INTO users (name, email, password, role) VALUES
 INSERT INTO users (name, email, password, role) VALUES
 ('Utente', 'user@test.com', '$2b$10$hzRyMYnojJJ5ezGOC3ESVOgyxbHEwrZOKYcKR5k5a0j1OFS9ufUeW', 'user');
 
+-- Password utente2 : user2
 INSERT INTO users (name, email, password, role) VALUES
 ('Utente2', 'user2@test.com', '$2y$10$EbgA8bYblfe6OfiLBtT3GeBNrPKxV3McfL0AmbsXqLbhX3R5RgcbK', 'user');
 
