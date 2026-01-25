@@ -5,12 +5,24 @@
     margin: 0;
     padding: 0;
 }
+html{
+    height: 100%; /* Fondamentale per il footer in basso */
+}
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f6f8; /* Grigio chiaro professionale */
+    background-color: #f4f6f8;
     color: #333;
     line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    
+    /* TRUCCO PER IL FOOTER ASSOLUTO */
+    min-height: 100vh;     /* La pagina è alta almeno quanto lo schermo */
+    position: relative;    /* Necessario per posizionare il footer rispetto al body */
+    padding-bottom: 220px; /* SPAZIO VITALE: Deve essere >= all'altezza del footer */
+    box-sizing: border-box;
+
 }
 
 a {
@@ -118,9 +130,13 @@ button, .btn-new {
     transition: background 0.2s;
 }
 
-button:hover, .btn-new:hover {
-    background-color: #1557b0;
+button:hover {
+    background-color: #1a73e8;
     text-decoration: none;
+}
+.btn-new:hover{
+    background-color: #dde2e9;
+    text-decoration: #1a73e8;
 }
 
 input[type="text"], 
@@ -196,3 +212,56 @@ textarea {
     margin-bottom: 5px;
     display: block;
 }
+
+/* --- FOOTER PERFETTAMENTE CENTRATO --- */
+.main-footer {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 30px 20px;
+    border-top: 4px solid #1a73e8;
+    font-size: 0.9rem;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    /* POSIZIONAMENTO ASSOLUTO */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto; /* O circa 180px/200px in base al contenuto */
+}
+
+.main-footer p {
+    margin: 0; /* Rimuoviamo i margini default per un controllo perfetto */
+}
+
+/* --- BOTTONE STILE "GOOGLE BLUE" (Usato per Footer e Navbar) --- */
+.btn-style {
+    background-color: #1a73e8; /* Blu Google */
+    color: white !important;   /* Forza il testo bianco */
+    padding: 8px 20px;
+    border-radius: 20px;       /* Arrotondato */
+    text-decoration: none;
+    font-weight: bold;
+    border: 1px solid transparent;
+    transition: all 0.2s ease-in-out;
+    display: inline-block;
+}
+
+.btn-style:hover {
+    background-color: #1557b0; /* Blu più scuro al passaggio */
+    transform: translateY(-2px); /* Effetto sollevamento */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Ombra leggera */
+}
+
+/* Animazione Cuore */
+.heart-beat {
+    color: #e74c3c;
+    display: inline-block;
+    animation: beat 1s infinite alternate;
+}
+@keyframes beat { to { transform: scale(1.1); } }

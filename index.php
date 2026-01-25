@@ -17,19 +17,19 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
 </head>
 <body>
 
-    <nav style="background: #333; color: white; padding: 15px; display: flex; justify-content: space-between;">
+    <nav>
         <div class="logo">supporto<strong>iFantastici4</strong></div>
         <div class="menu">
             <?php if ($is_logged): ?>
                 <span>Ciao, <strong><?php echo htmlspecialchars($user_name); ?></strong> (<?php echo $role; ?>)</span>
                 | <a href="logout.php" style="color: #ff9999;">Esci</a>
             <?php else: ?>
-                <a href="auth.php" style="color: white;">Accedi / Registrati</a>
+                <a href="auth.php" class="btn-style">Accedi / Registrati</a>
             <?php endif; ?>
         </div>
     </nav>
 
-    <div class="container" style="padding: 20px;">
+    <div class="container" >
         
         <?php if ($is_logged): ?>
 
@@ -112,6 +112,19 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
         <?php endif; ?>
 
     </div>
+
+    <footer class="main-footer">
+        <p>
+            Made with <span class="heart-beat">❤️</span> da: 
+            <strong>Mattia Letteriello</strong>, 
+            <strong>Jonathan Punzo</strong>, 
+            <strong>Antonia Lucia Lamberti</strong>, 
+            <strong>Valentino Potapchuk</strong>.
+        </p>
+        <p style="opacity: 0.8; font-size: 0.85em;">Esame di Tecnologie Web 2025/2026</p>
+        
+        <a href="chi_siamo.php" class="btn-style">Chi Siamo</a>
+    </footer>
 
 </body>
 </html>
