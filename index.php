@@ -24,7 +24,7 @@
         /* 1. NAVBAR MIGLIORATA */
         nav {
             background-color: var(--sidebar-dark);
-            padding: 1rem 2rem;
+            padding: 0.8rem 2rem; /* Padding ridotto per il logo */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -42,29 +42,7 @@
             color: white;
             text-decoration: none;
         }
-        .brand-icon {
-            font-size: 2rem;
-            color: var(--primary); /* Blu elettrico */
-        }
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.1;
-        }
-        .brand-main {
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            text-transform: uppercase;
-        }
-        .brand-sub {
-            font-size: 0.75rem;
-            font-weight: 300;
-            opacity: 0.8;
-            letter-spacing: 1px;
-            color: #94a3b8;
-        }
-
+        
         /* Menu Utente */
         .user-menu {
             display: flex;
@@ -79,40 +57,35 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
         
-
-        /* 2. HERO SECTION (Versione Light - Alta Leggibilità) */
+        /* 2. HERO SECTION */
         .hero-section {
-            /* Sfondo sfumato chiarissimo per staccare dal bianco puro */
             background: linear-gradient(180deg, rgba(37,99,235,0.03) 0%, rgba(37,99,235,0.08) 100%);
             padding: 80px 40px;
             border-radius: var(--radius);
             margin-bottom: 40px;
             text-align: center;
-            border: 1px solid rgba(37, 99, 235, 0.1); /* Bordino sottile blu */
+            border: 1px solid rgba(37, 99, 235, 0.1);
             position: relative;
             overflow: hidden;
         }
 
-        /* Titolo Scuro e Forte */
         .hero-title { 
             font-size: 3rem; 
             font-weight: 800; 
             margin-bottom: 20px; 
             letter-spacing: -1.5px;
-            color: var(--sidebar-dark); /* Colore scuro (Blu Notte) */
+            color: var(--sidebar-dark);
         }
 
-        /* CORREZIONE TESTO: Ora grigio scuro per essere leggibile su sfondo chiaro */
         .hero-text { 
             font-size: 1.15rem; 
             line-height: 1.7;
             max-width: 650px; 
             margin: 0 auto 35px auto; 
-            color: var(--text-muted); /* <--- Era troppo chiaro, ora è grigio scuro/bluastro */
+            color: var(--text-muted);
             font-weight: 500;
         }
         
-        /* Bottone Hero */
         .btn-hero {
             background: var(--primary); 
             color: white; 
@@ -151,7 +124,7 @@
         .faq-question { font-weight: 700; color: var(--sidebar-dark); margin-bottom: 10px; display: flex; gap: 10px; }
         .faq-answer { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
 
-        /* 4. DASHBOARD HEADER (Per Loggati) */
+        /* 4. DASHBOARD HEADER */
         .dash-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #f1f5f9;
@@ -172,11 +145,7 @@
 
     <nav>
         <a href="index.php" class="brand-container">
-            <div class="brand-icon"><i class="fas fa-headset"></i></div>
-            <div class="brand-text">
-                <span class="brand-main">HELPDESK</span>
-                <span class="brand-sub">Gruppo: i Fantastici 4</span>
-            </div>
+            <img src="logobanner.png" alt="HelpDesk Logo" class="brand-logo-img">
         </a>
 
         <div class="user-menu">
@@ -214,10 +183,8 @@
 
                 <?php
                     if ($role == 'admin') {
-                        // Admin vede tutto e nomi utenti
                         $query = "SELECT t.*, u.name as author_name FROM tickets t JOIN users u ON t.user_id = u.id ORDER BY t.created_at DESC";
                     } else {
-                        // User vede solo i suoi
                         $user_id = $_SESSION['user_id'];
                         $query = "SELECT * FROM tickets WHERE user_id = $user_id ORDER BY created_at DESC";
                     }
@@ -247,7 +214,6 @@
                                     
                                     <td class="status-<?php echo $row['status']; ?>">
                                         <?php 
-                                            // Icone per stato
                                             $icon = "";
                                             if($row['status']=='open') $icon = "<i class='fas fa-circle-notch'></i>";
                                             if($row['status']=='in-progress') $icon = "<i class='fas fa-wrench'></i>";
@@ -300,7 +266,6 @@
 
             <div class="faq-grid">
                 <?php
-                // Recuperiamo le FAQ dal database
                 $faq_query = "SELECT * FROM faqs";
                 $faq_res = pg_query($db_conn, $faq_query);
                 
@@ -329,7 +294,9 @@
 
         <?php endif; ?>
 
-    </div> <footer class="main-footer">
+    </div> 
+
+    <footer class="main-footer">
         <p>
             Made with <span class="heart-beat">❤️</span> da: 
             <strong>Mattia Letteriello</strong>, 

@@ -40,13 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['new_status']) && $_SES
     exit;
 }
 
-// 4. GESTIONE ELIMINAZIONE TICKET (NUOVO - Solo Admin)
+// 4. ELIMINAZIONE TICKET
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_ticket']) && $_SESSION['user_role'] == 'admin') {
-    // Cancelliamo il ticket (grazie a ON DELETE CASCADE nel DB, si cancellano anche i messaggi)
     $q_del = "DELETE FROM tickets WHERE id = $ticket_id";
     pg_query($db_conn, $q_del);
-    
-    // Redirect alla home perché il ticket non esiste più
     header("Location: index.php");
     exit;
 }
@@ -63,7 +60,6 @@ $res_msgs = pg_query($db_conn, $query_msgs);
     <title>Ticket #<?php echo $ticket_id; ?></title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* CSS LOCALE PER LA CHAT */
         .chat-box {
             height: 400px;
             overflow-y: auto;
@@ -79,13 +75,21 @@ $res_msgs = pg_query($db_conn, $query_msgs);
             text-align: center; font-weight: bold; border-radius: 5px;
             margin-top: 20px; border: 1px solid #fca5a5;
         }
+        nav {
+            background-color: var(--sidebar-dark);
+            padding: 0.8rem 2rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
 <nav>
-    <div class="logo">supporto<strong>iFantastici4</strong></div>
-
+    <a href="index.php" style="display:flex; align-items:center;">
+        <img src="logobanner.png" alt="Logo" class="brand-logo-img">
+    </a>
 </nav>
 
 <div class="container">
@@ -107,7 +111,6 @@ $res_msgs = pg_query($db_conn, $query_msgs);
 
     <?php if($_SESSION['user_role'] == 'admin'): ?>
         <div style="background: #2c3e50; color: white; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
-            
             <form method="POST" style="margin-bottom: 10px;">
                 <label>Gestione Ticket:</label>
                 <div style="display:flex; gap:10px; margin-top:5px;">
@@ -120,14 +123,11 @@ $res_msgs = pg_query($db_conn, $query_msgs);
                     <button type="submit" class="btn-style" style="border:1px solid white;">Aggiorna</button>
                 </div>
             </form>
-
             <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2);">
-
             <form method="POST" onsubmit="return confirm('⚠️ Sei sicuro di voler ELIMINARE definitivamente questo ticket?\nQuesta azione non può essere annullata.');">
                 <input type="hidden" name="delete_ticket" value="1">
                 <button type="submit" class="btn-delete">🗑️ Elimina Ticket</button>
             </form>
-
         </div>
     <?php endif; ?>
 
@@ -149,7 +149,6 @@ $res_msgs = pg_query($db_conn, $query_msgs);
                 <?php echo nl2br(htmlspecialchars($msg['message'])); ?>
             </div>
         <?php endwhile; ?>
-        
         <?php if(pg_num_rows($res_msgs) == 0) echo "<p style='color:gray; text-align:center'>Nessun messaggio.</p>"; ?>
     </div>
 
@@ -159,22 +158,13 @@ $res_msgs = pg_query($db_conn, $query_msgs);
             <button type="submit" class="btn-style" style="margin-top: 10px; width: 100%;">Invia Risposta</button>
         </form>
     <?php else: ?>
-        <div class="closed-notice">
-            🔒 Questo ticket è stato chiuso. La conversazione è terminata.
-        </div>
+        <div class="closed-notice">🔒 Questo ticket è stato chiuso. La conversazione è terminata.</div>
     <?php endif; ?>
 
 </div>
 
 <footer class="main-footer">
-    <p>
-        Made with <span class="heart-beat">❤️</span> da: 
-        <strong>Mattia Letteriello</strong>, 
-        <strong>Jonathan Punzo</strong>, 
-        <strong>Antonia Lucia Lamberti</strong>, 
-        <strong>Valentino Potapchuk</strong>.
-    </p>
-    <p style="opacity: 0.8; font-size: 0.85em;">Esame di Tecnologie Web 2025/2026</p>
+    <p>Made with ❤️ da: <strong>iFantastici4</strong></p>
     <a href="chi_siamo.php" class="btn-style">Chi Siamo</a>
 </footer>
 

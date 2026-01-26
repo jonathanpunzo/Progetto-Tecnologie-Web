@@ -114,6 +114,19 @@ nav a:hover {
     text-decoration: none;
 }
 
+/* --- STILE LOGO IMMAGINE GLOBALE --- */
+.brand-logo-img {
+    height: 80px;       /* Altezza fissa */
+    width: auto;        /* Larghezza automatica */
+    display: block;
+    object-fit: contain;
+}
+
+/* Su mobile lo rimpiccioliamo un po' */
+@media (max-width: 768px) {
+    .brand-logo-img { height: 60px; }
+}
+
 /* TITOLI E TESTI */
 h1, h2, h3 {
     color: #2c3e50;
