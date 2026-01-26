@@ -11,7 +11,7 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi Siamo - iFantastici4</title>
     <link rel="stylesheet" href="chi_siamo_style.css">
 </head>

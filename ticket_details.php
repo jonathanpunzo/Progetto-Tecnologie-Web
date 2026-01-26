@@ -59,7 +59,7 @@ $res_msgs = pg_query($db_conn, $query_msgs);
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket #<?php echo $ticket_id; ?></title>
     <link rel="stylesheet" href="style.css">
     <style>
