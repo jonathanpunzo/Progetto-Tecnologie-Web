@@ -9,8 +9,9 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
 <!DOCTYPE html>
 <html lang="it">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi Siamo - iFantastici4</title>
+    <title>Chi Siamo - HelpDesk</title>
     <link rel="stylesheet" href="chi_siamo_style.css">
     <style>
         /* Override per la nav qui dentro per coerenza */
