@@ -4,7 +4,7 @@ require_once('db.php');
 
 if (!isset($_SESSION['user_id'])) { header("Location: auth.php"); exit; }
 
-$ticket_id = $_GET['id'];
+$ticket_id = intval($_GET['id']);
 $msg_error = "";
 
 // 1. RECUPERO TICKET
