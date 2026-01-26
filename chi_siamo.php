@@ -48,7 +48,7 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
                     <img src="img/Joanthan.png" alt="Jonathan Punzo">
                 </div>
                 <h3>Jonathan Punzo</h3>
-                <p>Database Administrator</p>
+                <p>Frontend Designer</p>
             </div>
 
             <div class="team-card">
@@ -56,7 +56,7 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
                     <img src="img/Antonia.png" alt="Antonia Lucia Lamberti">
                 </div>
                 <h3>Antonia Lucia Lamberti</h3>
-                <p>Frontend Designer</p>
+                <p>Database Administrator</p>
             </div>
 
             <div class="team-card">

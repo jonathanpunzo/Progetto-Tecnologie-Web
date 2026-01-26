@@ -157,6 +157,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </div>
 
+
+//JavaScript
 <script>
     // Funzione per switchare tra Login e Register
     function toggleForms() {
