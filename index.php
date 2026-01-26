@@ -1,13 +1,14 @@
 <?php
-session_start();
-require_once('db.php');
+    session_start();
+    require_once('db.php');
 
-// Verifichiamo se l'utente è loggato
-$is_logged = isset($_SESSION['user_id']);
-$user_name = $is_logged ? $_SESSION['user_name'] : 'Ospite';
-$role = $is_logged ? $_SESSION['user_role'] : '';
-
+    // Verifichiamo se l'utente è loggato
+    $is_logged = isset($_SESSION['user_id']);
+    $user_name = $is_logged ? $_SESSION['user_name'] : 'Ospite';
+    $role = $is_logged ? $_SESSION['user_role'] : '';
 ?>
+
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
