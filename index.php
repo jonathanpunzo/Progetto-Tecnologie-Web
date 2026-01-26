@@ -102,7 +102,7 @@
             transform: translateY(-3px); 
             box-shadow: 0 15px 35px rgba(37, 99, 235, 0.35); 
             text-decoration: none; 
-            color: white;
+            color: rgb(45, 89, 177);
             background-color: var(--primary-hover);
         }
 
