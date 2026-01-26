@@ -128,7 +128,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php if($success_msg): ?> <div class="alert alert-success"><?php echo $success_msg; ?></div> <?php endif; ?>
 
     <div id="login-form" class="<?php echo ($active_form == 'register') ? 'hidden' : ''; ?>">
-        <form method="POST" action="auth.php" onsubmit="return validateLogin()">
+        <form method="POST" action="auth.php" onsubmit="return validateLogin()" novalidate>
             <input type="hidden" name="action" value="login">
             <input type="email" id="log_email" name="log_email" placeholder="Email" value="<?php echo ($active_form == 'login') ? $sticky_email : ''; ?>" required>
             <input type="password" id="log_pwd" name="log_pwd" placeholder="Password" required>
@@ -195,13 +195,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // VALIDAZIONE LATO CLIENT (JS) - LOGIN
+// VALIDAZIONE LATO CLIENT (JS) - LOGIN
     function validateLogin() {
         var email = document.getElementById('log_email').value;
-        if (email.indexOf('@') === -1) {
-            alert("Inserisci un'email valida.");
+        var pwd = document.getElementById('log_pwd').value;
+
+        // 1. Controllo se i campi sono vuoti (visto che abbiamo messo novalidate)
+        if (email.trim() === "" || pwd.trim() === "") {
+            alert("Compila tutti i campi per accedere.");
             return false;
         }
-        return true;
+
+        // 2. Controllo validità email
+        if (email.indexOf('@') === -1 || email.indexOf('.') === -1) {
+            alert("Inserisci un indirizzo email valido (es. nome@test.it).");
+            return false;
+        }
+
+        return true; // Tutto ok, invia al server
     }
 </script>
 
