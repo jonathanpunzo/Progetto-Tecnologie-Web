@@ -9,9 +9,31 @@ html{
     height: 100%; /* Fondamentale per il footer in basso */
 }
 
+/* ✅ Aggiunta: variabili base per look più “professionale” */
+:root{
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: rgba(2,6,23,.08);
+
+    --primary: #1a73e8;      /* Blu Google */
+    --primary-600: #1557b0;  /* Hover */
+
+    --radius: 14px;
+    --shadow: 0 10px 30px rgba(2,6,23,.08);
+    --shadow-sm: 0 4px 16px rgba(2,6,23,.06);
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f6f8;
+
+    /* ✅ Modifica: background più moderno (resta comunque leggero e pulito) */
+    background:
+        radial-gradient(1200px 600px at 15% -10%, rgba(26,115,232,.14), transparent 60%),
+        radial-gradient(900px 500px at 95% 0%, rgba(231,76,60,.10), transparent 55%),
+        var(--bg);
+
     color: #333;
     line-height: 1.6;
     margin: 0;
@@ -27,12 +49,12 @@ body {
 
 a {
     text-decoration: none;
-    color: #1a73e8; /* Blu Google */
+    color: var(--primary); /* ✅ Modifica: usa variabile */
     transition: color 0.3s;
 }
 
 a:hover {
-    color: #1557b0;
+    color: var(--primary-600);
     text-decoration: underline;
 }
 
@@ -42,19 +64,37 @@ a:hover {
     margin: 30px auto;
     background: white;
     padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Ombra leggera */
+
+    /* ✅ Modifica: più “card” moderna */
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
 }
+
+/* ✅ Aggiunta: header pagina (titolo + azioni) */
+.page-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.page-header h1{ margin:0; }
 
 /* NAVBAR (Menu in alto) */
 nav {
-    background-color: #2c3e50; /* Blu scuro */
+    /* ✅ Modifica: gradient premium invece di tinta piatta */
+    background: linear-gradient(180deg, #243447, #1f2a37);
     color: white;
     padding: 15px 30px;
     display: flex; /* Flexbox per allineare logo a sinistra e menu a destra */
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+    /* ✅ Aggiunta: separatore sottile */
+    border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
 nav .logo {
@@ -71,7 +111,8 @@ nav a {
 }
 
 nav a:hover {
-    color: #ff9999;
+    /* ✅ Modifica: hover più coerente col blu, meno “pink” */
+    color: #cfe3ff;
     text-decoration: none;
 }
 
@@ -117,26 +158,56 @@ td[class^="status-"] { /* Selettore avanzato: cerca classi che iniziano con "sta
 .status-resolved { color: #17a2b8; }    /* Ciano */
 .status-closed { color: #dc3545; }      /* Rosso */
 
+/* ✅ Aggiunta: badge “pill” opzionali (se vuoi usarli al posto di status-*) */
+.badge{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--border);
+}
+.badge-open{ background: rgba(40,167,69,.12); color:#1f7a34; }
+.badge-in-progress{ background: rgba(230,126,34,.14); color:#a55412; }
+.badge-resolved{ background: rgba(23,162,184,.14); color:#0b6a78; }
+.badge-closed{ background: rgba(220,53,69,.12); color:#b42332; }
+
 /* PULSANTI E FORM */
 button, .btn-new {
     display: inline-block;
-    background-color: #1a73e8;
+    background-color: var(--primary);
     color: white;
     padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+
+    /* ✅ Modifica: pill + più “pro” */
+    border-radius: 999px;
+
     cursor: pointer;
     font-size: 1rem;
     transition: background 0.2s;
+    font-weight: 700;
 }
 
 button:hover {
-    background-color: #1a73e8;
+    /* ✅ Fix: prima era uguale al colore base */
+    background-color: var(--primary-600);
     text-decoration: none;
 }
+
 .btn-new:hover{
-    background-color: #dde2e9;
-    text-decoration: #1a73e8;
+    /* ✅ Fix: prima diventava grigio e aveva text-decoration “strano” */
+    background-color: var(--primary-600);
+    text-decoration: none;
+}
+
+/* ✅ Aggiunta: focus visibile (accessibilità + look premium) */
+button:focus-visible, .btn-new:focus-visible{
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(26,115,232,.16);
 }
 
 input[type="text"], 
@@ -150,6 +221,17 @@ textarea {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1rem;
+}
+
+/* ✅ Aggiunta: focus form più professionale */
+input[type="text"]:focus, 
+input[type="email"]:focus, 
+input[type="password"]:focus, 
+select:focus, 
+textarea:focus{
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(26,115,232,.16);
 }
 
 /* DRAG & DROP AREA */
@@ -212,6 +294,18 @@ textarea {
     margin-bottom: 5px;
     display: block;
 }
+
+/* ✅ Aggiunta: card generica (utile per FAQ/box vari) */
+.card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    padding: 16px;
+}
+.faq-card{ margin-bottom: 12px; }
+.faq-q{ margin: 0 0 6px 0; }
+.faq-a{ margin: 0; color: var(--muted); }
 
 /* --- FOOTER PERFETTAMENTE CENTRATO --- */
 .main-footer {
@@ -286,37 +380,7 @@ textarea {
     background-color: #c82333; /* Rosso più scuro */
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* --- RESPONSIVE MOBILE (Regole per schermi < 768px) --- */
-
-
 @media (max-width: 768px) {
 
     .desktop-only{
@@ -388,6 +452,8 @@ textarea {
 .table-responsive {
     overflow-x: auto;
     width: 100%;
-    border-radius: 5px;
-    border: 1px solid #eee;
+
+    /* ✅ Modifica: più “dashboard” */
+    border-radius: 12px;
+    border: 1px solid var(--border);
 }
