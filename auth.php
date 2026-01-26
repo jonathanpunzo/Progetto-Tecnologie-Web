@@ -175,43 +175,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     /* --- STILI INPUT E TESTI --- */
-    h1 { font-size: 2.2rem; margin-bottom: 10px; color: var(--sidebar-dark); letter-spacing: -1px; }
-    .subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 1rem; }
+    h1 { font-size: 2rem; margin-bottom: 5px; color: var(--sidebar-dark); letter-spacing: -1px; }
+    .subtitle { color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem; }
 
-    .input-group { position: relative; margin-bottom: 20px; }
+    .input-group { 
+        position: relative; 
+        margin-bottom: 12px; /* RIDOTTO: Era 20px -> Ora 12px (Più compatto) */
+    }
+    
     .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; transition: color 0.3s;}
     
     .input-group input {
-        width: 100%; padding: 15px 15px 15px 45px;
-        border: 2px solid #e2e8f0; /* Bordo leggermente più spesso */
-        border-radius: 12px; font-size: 1rem;
-        transition: all 0.3s; background: #f8fafc;
-        color: var(--text-main);
-        font-family: inherit;
+        width: 100%; 
+        padding: 12px 15px 12px 45px; /* RIDOTTO: Padding verticale da 15px a 12px */
+        border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem;
+        transition: all 0.3s; background: #f8fafc; color: var(--text-main); font-family: inherit;
     }
-    
-    /* Focus Effect: Cambia colore bordo e icona */
     .input-group input:focus {
-        border-color: var(--primary); background: white;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-        outline: none;
+        border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;
     }
-    .input-group input:focus + i { color: var(--primary); } /* Selettore non supportato css puro senza invertire DOM, ma l'effetto focus input basta */
+    .input-group input:focus + i { color: var(--primary); }
+
 
     .form-options { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 0.9rem; color: var(--text-muted); }
     .forgot-link { color: var(--primary); font-weight: 600; transition: color 0.2s; }
     .forgot-link:hover { color: var(--primary-hover); text-decoration: underline; }
 
+    /* Bottoni */
     .btn-login {
-        width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 12px;
+        width: 100%; padding: 12px; /* Ridotto leggermente */
+        font-size: 1.1rem; border-radius: 10px; margin-top: 10px;
         background: var(--primary); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-        border: none; color: white; font-weight: bold; cursor: pointer;
-        transition: all 0.3s ease;
+        border: none; color: white; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
     }
-    .btn-login:hover { 
-        background-color: var(--primary-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); 
+    .btn-login:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); }
+
+    /* Bottone Verde per Registrazione */
+    .btn-register {
+        background-color: #16a34a !important; /* Verde Fisso */
+        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
+    }
+    .btn-register:hover {
+        background-color: #15803d !important;
+        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4);
     }
 
     .switch-link { text-align: center; margin-top: 25px; color: var(--text-muted); }
@@ -237,13 +243,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="login-container">
     <div class="login-image-side">
         <div class="image-overlay">
-            <h2>Il tuo supporto, la nostra priorità. <br>Sempre qui per te.</h2>
+            <h2>Il tuo supporto <br>La nostra priorità. <br>Sempre qui per te.</h2>
         </div>
     </div>
 
     <div class="login-form-side">
         <div class="logo-text">
-            <i class="fas fa-headset"></i> iFantastici4 HelpDesk
+            <i class="fas fa-headset"></i> HelpDesk iFantastici4
         </div>
 
         <div id="alert-area">
@@ -274,7 +280,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" style="width: auto; margin: 0;"> Ricordami
                         </label>
-                        <a href="#" class="forgot-link">Password dimenticata?</a>
                     </div>
                     
                     <button type="submit" class="btn-login">Accedi</button>
@@ -309,7 +314,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="password" id="reg_pwd2" name="reg_pwd2" placeholder="Conferma Password" required>
                     </div>
                     
-                    <button type="submit" class="btn-login" style="background: var(--success);">Registrati</button>
+                    <button type="submit" class="btn-login" style="background: #16a34a !important; color: white;">Registrati</button>
                 </form>
                 
                 <div class="switch-link">
