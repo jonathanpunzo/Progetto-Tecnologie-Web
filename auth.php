@@ -57,6 +57,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 }
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -67,6 +70,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <title>Accedi - iFantastici4 HelpDesk</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+
+
+
+
+
 
 <style>
     /* --- GESTIONE CONFLITTI CON STYLE.CSS --- */
@@ -231,11 +241,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+
+
+
     /* RESPONSIVE */
     @media (min-width: 992px) {
         .login-container { grid-template-columns: 1fr 1.2fr; }
         .login-image-side { display: block; }
     }
+
+
+
+
+
 </style>
 </head>
 <body>
