@@ -122,12 +122,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
 
 <div class="auth-card">
-    <h2 style="margin-bottom: 20px; color: #1a73e8;">HelpDesk Login</h2>
+    
 
     <?php if($error_msg): ?> <div class="alert alert-error"><?php echo $error_msg; ?></div> <?php endif; ?>
     <?php if($success_msg): ?> <div class="alert alert-success"><?php echo $success_msg; ?></div> <?php endif; ?>
 
     <div id="login-form" class="<?php echo ($active_form == 'register') ? 'hidden' : ''; ?>">
+        <h2 style="margin-bottom: 20px; color: #1a73e8;">HelpDesk Login</h2>
         <form method="POST" action="auth.php" onsubmit="return validateLogin()" novalidate>
             <input type="hidden" name="action" value="login">
             <input type="email" id="log_email" name="log_email" placeholder="Email" value="<?php echo ($active_form == 'login') ? $sticky_email : ''; ?>" required>
@@ -140,6 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <div id="register-form" class="<?php echo ($active_form == 'login') ? 'hidden' : ''; ?>">
+        <h2 style="margin-bottom: 20px; color: #1a73e8;">HelpDesk Register</h2>
         <form method="POST" action="auth.php" onsubmit="return validateRegister()">
             <input type="hidden" name="action" value="register">
             
