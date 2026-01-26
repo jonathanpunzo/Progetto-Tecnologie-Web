@@ -26,20 +26,11 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
 </head>
 <body>
 
-    <nav>
-        <a href="index.php" style="display:flex; align-items:center;">
-            <img src="icon/logobanner.png" alt="Logo" class="brand-logo-img">
-        </a>
-        <div class="menu">
-            <?php if ($is_logged): ?>
-                <span style="margin-left:15px; color:white;">Ciao, <strong><?php echo htmlspecialchars($user_name); ?></strong> (<?php echo $role; ?>)</span>
-                <span class="desktop-only" style="color:white;"> | </span>   
-                <a href="logout.php" style="color: #ff9999;">Esci</a>
-            <?php else: ?>
-                <a href="auth.php" class="btn-style">Accedi / Registrati</a>
-            <?php endif; ?>
-        </div>
-    </nav>
+<nav>
+    <a href="index.php" style="display:flex; align-items:center;">
+        <img src="icon/logobanner.png" alt="Logo" class="brand-logo-img">
+    </a>
+</nav>
 
     <main class="container">
         <h1 style="text-align: center; margin-bottom: 40px;">Il Nostro Team</h1>

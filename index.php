@@ -300,7 +300,7 @@
     <footer class="main-footer">
         <p>
             Made with <span class="heart-beat">❤️</span> da: 
-            <strong>I Fantastici 4</strong>, 
+            <strong>I Fantastici 4</strong> 
         </p>
         <p style="opacity: 0.8; font-size: 0.85em;">Esame di Tecnologie Web 2025/2026</p>
         

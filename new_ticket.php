@@ -2,6 +2,9 @@
 session_start();
 require_once('db.php');
 
+$user_name = $_SESSION['user_name'];
+$role = $_SESSION['user_role'];
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth.php");
     exit;
@@ -67,10 +70,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
 
 <nav>
-    <div class="logo">supporto<strong>iFantastici4</strong></div>
-    <div class="menu">
-        <a href="index.php">Home</a>
-    </div>
+    <a href="index.php" style="display:flex; align-items:center;">
+        <img src="icon/logobanner.png" alt="Logo" class="brand-logo-img">
+    </a>
 </nav>
 
 <div class="container" style="max-width: 600px;">

@@ -194,7 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         margin-bottom: 12px; /* RIDOTTO: Era 20px -> Ora 12px (Più compatto) */
     }
     
-    .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; transition: color 0.3s;}
+    .input-group i { position: absolute; left: 15px; top: 44%; transform: translateY(-50%); color: #94a3b8; transition: color 0.3s;}
     
     .input-group input {
         width: 100%; 
