@@ -9,7 +9,7 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="icon/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi Siamo - HelpDesk</title>
     <link rel="stylesheet" href="chi_siamo_style.css">
@@ -28,7 +28,7 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
 
     <nav>
         <a href="index.php" style="display:flex; align-items:center;">
-            <img src="logobanner.png" alt="Logo" class="brand-logo-img">
+            <img src="icon/logobanner.png" alt="Logo" class="brand-logo-img">
         </a>
         <div class="menu">
             <?php if ($is_logged): ?>

@@ -11,7 +11,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="icon/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - HelpDesk</title>
@@ -146,7 +146,7 @@
 
     <nav>
         <a href="index.php" class="brand-container">
-            <img src="logobanner.png" alt="HelpDesk Logo" class="brand-logo-img">
+            <img src="icon/logobanner.png" alt="HelpDesk Logo" class="brand-logo-img">
         </a>
 
         <div class="user-menu">
@@ -300,10 +300,7 @@
     <footer class="main-footer">
         <p>
             Made with <span class="heart-beat">❤️</span> da: 
-            <strong>Mattia Letteriello</strong>, 
-            <strong>Jonathan Punzo</strong>, 
-            <strong>Antonia Lucia Lamberti</strong>, 
-            <strong>Valentino Potapchuk</strong>.
+            <strong>I Fantastici 4</strong>, 
         </p>
         <p style="opacity: 0.8; font-size: 0.85em;">Esame di Tecnologie Web 2025/2026</p>
         

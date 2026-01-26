@@ -56,7 +56,7 @@ $res_msgs = pg_query($db_conn, $query_msgs);
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="icon/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket #<?php echo $ticket_id; ?> HelpDesk</title>
     <link rel="stylesheet" href="style.css">
@@ -89,7 +89,7 @@ $res_msgs = pg_query($db_conn, $query_msgs);
 
 <nav>
     <a href="index.php" style="display:flex; align-items:center;">
-        <img src="logobanner.png" alt="Logo" class="brand-logo-img">
+        <img src="icon/logobanner.png" alt="Logo" class="brand-logo-img">
     </a>
 </nav>
 
