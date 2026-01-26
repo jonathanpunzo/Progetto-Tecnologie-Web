@@ -23,7 +23,8 @@
         <div class="menu">
             <?php if ($is_logged): ?>
                 <span>Ciao, <strong><?php echo htmlspecialchars($user_name); ?></strong> (<?php echo $role; ?>)</span>
-                | <a href="logout.php" style="color: #ff9999;">Esci</a>
+                <span class="desktop-only"> | </span> 
+                <a href="logout.php" style="color: #ff9999;">Esci</a>
             <?php else: ?>
                 <a href="auth.php" class="btn-style">Accedi / Registrati</a>
             <?php endif; ?>
@@ -63,32 +64,34 @@
             ?>
 
             <?php if ($result && pg_num_rows($result) > 0): ?>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <?php if($role == 'admin') echo "<th>Utente</th>"; ?>
-                            <th>Oggetto</th>
-                            <th>Stato</th>
-                            <th>Priorità</th>
-                            <th>Data</th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($row = pg_fetch_assoc($result)): ?>
-                        <tr>
-                            <td>#<?php echo $row['id']; ?></td>
-                            <?php if($role == 'admin') echo "<td>" . htmlspecialchars($row['author_name']) . "</td>"; ?>
-                            <td><?php echo htmlspecialchars($row['title']); ?></td>
-                            <td class="status-<?php echo $row['status']; ?>"><?php echo strtoupper($row['status']); ?></td>
-                            <td><?php echo $row['priority']; ?></td>
-                            <td><?php echo date('d/m/Y H:i', strtotime($row['created_at'])); ?></td>
-                            <td><a href="ticket_details.php?id=<?php echo $row['id']; ?>">Vedi</a></td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <?php if($role == 'admin') echo "<th>Utente</th>"; ?>
+                                <th>Oggetto</th>
+                                <th>Stato</th>
+                                <th>Priorità</th>
+                                <th>Data</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = pg_fetch_assoc($result)): ?>
+                            <tr>
+                                <td>#<?php echo $row['id']; ?></td>
+                                <?php if($role == 'admin') echo "<td>" . htmlspecialchars($row['author_name']) . "</td>"; ?>
+                                <td><?php echo htmlspecialchars($row['title']); ?></td>
+                                <td class="status-<?php echo $row['status']; ?>"><?php echo strtoupper($row['status']); ?></td>
+                                <td><?php echo $row['priority']; ?></td>
+                                <td><?php echo date('d/m/Y H:i', strtotime($row['created_at'])); ?></td>
+                                <td><a href="ticket_details.php?id=<?php echo $row['id']; ?>">Vedi</a></td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
             <?php else: ?>
                 <p>Non hai ancora aperto nessun ticket.</p>
             <?php endif; ?>

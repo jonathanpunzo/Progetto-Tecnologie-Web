@@ -22,8 +22,9 @@ $role = $is_logged ? $_SESSION['user_role'] : '';
         <div class="menu">
             
             <?php if ($is_logged): ?>
-                <span style="margin-left:15px">Ciao, <strong><?php echo htmlspecialchars($user_name); ?></strong></span>
-                | <a href="logout.php" style="color: #ff9999;">Esci</a>
+                <span style="margin-left:15px">Ciao, <strong><?php echo htmlspecialchars($user_name); ?></strong> (<?php echo $role; ?>)</span>
+                <span class="desktop-only"> | </span>   
+                <a href="logout.php" style="color: #ff9999;">Esci</a>
             <?php else: ?>
                 <a href="auth.php" class="btn-style">Accedi / Registrati</a>
             <?php endif; ?>

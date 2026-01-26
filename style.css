@@ -285,3 +285,83 @@ textarea {
 .btn-delete:hover {
     background-color: #c82333; /* Rosso più scuro */
 }
+
+
+
+/* --- RESPONSIVE MOBILE (Regole per schermi < 768px) --- */
+
+
+@media (max-width: 768px) {
+
+    .desktop-only{
+        display: none;
+    }
+    /* 1. NAVBAR: Tutto in colonna e CENTRATO */
+    nav {
+        flex-direction: column;
+        align-items: center;  /* <--- Questo raddrizza il logo e il menu */
+        justify-content: center;
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .logo {
+        margin-bottom: 5px; /* Un po' di spazio sotto il logo */
+        text-align: center;
+    }
+
+    .menu {
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centra i bottoni all'interno del menu */
+        width: 100%;
+        gap: 10px;
+    }
+    
+    /* 2. BOTTONI MENU: Compatti e centrali */
+    .menu a, .menu button {
+        display: block;
+        width: 100%;
+        max-width: 250px; /* <--- EVITA L'EFFETTO "LARGHEZZA INFINITA" */
+        text-align: center;
+        padding: 10px 0;  /* Padding verticale equilibrato */
+        background: #1a73e8; /* Sfondo leggermente più visibile */
+        border-radius: 20px; /* Arrotondati stanno meglio su mobile */
+        margin: 0 auto; /* Forza il centro anche se scappa qualcosa */
+        color: white !important;  
+    }
+
+
+    /* 3. CONTAINER: Occupa tutto lo schermo */
+    .container, .auth-card {
+        width: 90% !important; /* Lascia un bordino piccolo ai lati (5%) */
+        margin: 20px auto;
+        padding: 20px !important;
+    }
+
+    /* 4. CHAT e TABELLE */
+    .ticket-container-fixed {
+        height: auto !important;
+        flex-direction: column !important;
+        overflow: visible !important;
+    }
+
+    .chat-box {
+        height: 350px; 
+    }
+    
+    /* Per evitare che le tabelle escano fuori */
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+    }
+}
+
+/* Permette alla tabella di scorrere lateralmente col dito se non c'è spazio */
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #eee;
+}
