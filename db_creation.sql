@@ -1,11 +1,10 @@
--- Pulizia: Rimuove le tabelle se esistono già (per evitare errori di reinstallazione)
+-- Pulizia: Rimuove le tabelle se esistono già
 DROP TABLE IF EXISTS messages CASCADE;
 DROP TABLE IF EXISTS tickets CASCADE;
 DROP TABLE IF EXISTS faqs CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
 -- 1. CREAZIONE TABELLA UTENTI
--- Gestisce chi può accedere al sito
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -14,11 +13,9 @@ CREATE TABLE users (
     role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
--- Assegna il proprietario 'www' come richiesto dalle specifiche
 ALTER TABLE users OWNER TO www;
 
 -- 2. CREAZIONE TABELLA FAQ
--- Domande e risposte visibili anche ai non loggati
 CREATE TABLE faqs (
     id SERIAL PRIMARY KEY,
     question VARCHAR(255) NOT NULL,
@@ -27,7 +24,6 @@ CREATE TABLE faqs (
 ALTER TABLE faqs OWNER TO www;
 
 -- 3. CREAZIONE TABELLA TICKET
--- Il cuore del progetto: le segnalazioni
 CREATE TABLE tickets (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -36,13 +32,12 @@ CREATE TABLE tickets (
     priority VARCHAR(20) CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
     status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open', 'in-progress', 'resolved', 'closed')),
     category VARCHAR(50),
-    attachment_path VARCHAR(255), -- Percorso del file caricato (HTML5 Drag&Drop)
+    attachment_path VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE tickets OWNER TO www;
 
 -- 4. CREAZIONE TABELLA MESSAGGI
--- La chat tra utente e admin dentro il ticket
 CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
     ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
@@ -52,9 +47,9 @@ CREATE TABLE messages (
 );
 ALTER TABLE messages OWNER TO www;
 
--- --- POPOLAMENTO DATI DI PROVA ---
+-- --- POPOLAMENTO DATI ---
 
--- FAQ Iniziali
+-- FAQ
 INSERT INTO faqs (question, answer) VALUES 
 ('Come posso registrarmi?', 'Clicca sul pulsante Accedi/Registrati in alto a destra.'),
 ('Che formati di file accettate?', 'Accettiamo immagini (JPG, PNG) e PDF.'),
@@ -65,22 +60,35 @@ INSERT INTO faqs (question, answer) VALUES
 ('Ho sbagliato categoria, cosa faccio?', 'Non preoccuparti. Se un amministratore nota che la categoria è errata (es. Hardware invece di Software), provvederà a gestirlo comunque o a reindirizzarlo al reparto corretto.'),
 ('C''è un limite per gli allegati?', 'Sì, per garantire le prestazioni del server ti chiediamo di caricare file di dimensioni contenute (max 5MB). Se necessario, usa formati compressi come ZIP.');
 
--- UTENTI PREDEFINITI (bcrypt)
--- Password admin: admin
+-- UTENTI
+-- NOTA: La password per TUTTI è 'admin' (hash riutilizzato per comodità)
 INSERT INTO users (name, email, password, role) VALUES
 ('Admin', 'admin@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'admin');
 
--- Password utente: utente 
 INSERT INTO users (name, email, password, role) VALUES
-('Utente', 'user@test.com', '$2b$10$hzRyMYnojJJ5ezGOC3ESVOgyxbHEwrZOKYcKR5k5a0j1OFS9ufUeW', 'user');
+('Jonathan', 'jojo@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'),
+('Mattia', 'mattia@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'),
+('Antonia', 'antonia@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'),
+('Valentino', 'vale@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user');
 
--- Password utente2 : user2
-INSERT INTO users (name, email, password, role) VALUES
-('Utente2', 'user2@test.com', '$2y$10$EbgA8bYblfe6OfiLBtT3GeBNrPKxV3McfL0AmbsXqLbhX3R5RgcbK', 'user');
+-- TICKET (2 per ogni utente, ID progressivi)
 
-
--- TICKET DI PROVA
+-- Ticket di Jonathan (Jojo) - ID User presumibile: 2
 INSERT INTO tickets (user_id, title, description, priority, category) VALUES 
-(2, 'Problema Accesso', 'Non riesco a resettare la password.', 'medium', 'Account');
+(2, 'Problema CSS Safari', 'Le icone della navbar risultano disallineate su browser Safari mobile.', 'medium', 'Software'),
+(2, 'Licenza Adobe Scaduta', 'Mi serve il rinnovo della licenza per completare i mockup.', 'high', 'Account');
+
+-- Ticket di Mattia - ID User presumibile: 3
 INSERT INTO tickets (user_id, title, description, priority, category) VALUES 
-(3, 'Problema Hardware', 'Il display evidenzia un malfunzionamento.', 'urgent', 'Account');
+(3, 'Errore 500 API', 'L''endpoint di login restituisce errore server interno randomico.', 'urgent', 'Software'),
+(3, 'Tastiera diffettosa', 'Alcuni tasti rimangono incastrati, impossibile programmare velocemente.', 'low', 'Hardware');
+
+-- Ticket di Antonia - ID User presumibile: 4
+INSERT INTO tickets (user_id, title, description, priority, category) VALUES 
+(4, 'Connessione DB lenta', 'Le query sul database di staging impiegano più di 3 secondi.', 'high', 'Software'),
+(4, 'Accesso VPN negato', 'Le mie credenziali non funzionano più per l''accesso remoto.', 'urgent', 'Rete');
+
+-- Ticket di Valentino (Vale) - ID User presumibile: 5
+INSERT INTO tickets (user_id, title, description, priority, category) VALUES 
+(5, 'Bug upload immagini', 'Se carico un PNG trasparente lo sfondo diventa nero.', 'medium', 'Software'),
+(5, 'Richiesta secondo monitor', 'Per gestire meglio il backend avrei bisogno di uno schermo aggiuntivo.', 'low', 'Hardware');

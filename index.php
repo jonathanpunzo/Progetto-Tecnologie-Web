@@ -184,10 +184,12 @@
 
                 <?php
                     if ($role == 'admin') {
-                        $query = "SELECT t.*, u.name as author_name FROM tickets t JOIN users u ON t.user_id = u.id ORDER BY t.created_at DESC";
+                        // Modifica qui: ORDER BY t.id DESC
+                        $query = "SELECT t.*, u.name as author_name FROM tickets t JOIN users u ON t.user_id = u.id ORDER BY t.id DESC";
                     } else {
                         $user_id = $_SESSION['user_id'];
-                        $query = "SELECT * FROM tickets WHERE user_id = $user_id ORDER BY created_at DESC";
+                        // Modifica qui: ORDER BY id DESC
+                        $query = "SELECT * FROM tickets WHERE user_id = $user_id ORDER BY id DESC";
                     }
                     $result = pg_query($db_conn, $query);
                 ?>
