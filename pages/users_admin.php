@@ -21,9 +21,9 @@ $res_admins = pg_query($db_conn, $query_admins);
     .users-grid-layout {
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: 3fr 1fr; /* Proporzione 3 a 1 */
+        grid-template-rows: 3fr 1fr; 
         gap: 25px;
-        height: 100%; /* Occupa tutta l'altezza disponibile */
+        height: 100%; 
     }
 </style>
 
@@ -51,8 +51,13 @@ $res_admins = pg_query($db_conn, $query_admins);
                 <tbody>
                     <?php while($u = pg_fetch_assoc($res_users)): 
                         $initials = strtoupper(substr($u['name'], 0, 1));
+                        // CREAZIONE OGGETTO JSON SICURO
                         $userDataJs = htmlspecialchars(json_encode([
-                            'id' => $u['id'], 'name' => $u['name'], 'email' => $u['email'], 'role' => $u['role'], 'initials' => $initials
+                            'id' => $u['id'], 
+                            'name' => $u['name'], 
+                            'email' => $u['email'], 
+                            'role' => $u['role'], 
+                            'initials' => $initials
                         ]), ENT_QUOTES, 'UTF-8');
                     ?>
                     <tr style="border-bottom: 1px solid #f8fafc;">
@@ -90,7 +95,11 @@ $res_admins = pg_query($db_conn, $query_admins);
             <?php while($a = pg_fetch_assoc($res_admins)): 
                 $initials = strtoupper(substr($a['name'], 0, 1));
                 $adminDataJs = htmlspecialchars(json_encode([
-                    'id' => $a['id'], 'name' => $a['name'], 'email' => $a['email'], 'role' => $a['role'], 'initials' => $initials
+                    'id' => $a['id'], 
+                    'name' => $a['name'], 
+                    'email' => $a['email'], 
+                    'role' => $a['role'], 
+                    'initials' => $initials
                 ]), ENT_QUOTES, 'UTF-8');
             ?>
             <div style="background:#f8fafc; padding:10px 15px; border-radius:12px; border:1px solid #e2e8f0; display:flex; align-items:center; gap:15px; flex: 1 1 250px; min-width: 250px; height:fit-content;">
@@ -98,7 +107,7 @@ $res_admins = pg_query($db_conn, $query_admins);
                     <?php echo $initials; ?>
                 </div>
                 <div style="flex:1; overflow:hidden;">
-                    <div style="font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo htmlspecialchars($a['name']); ?></div>
+                    <div style="font-weight:700; color:var(--text-main);"><?php echo htmlspecialchars($a['name']); ?></div>
                     <div style="font-size:0.75rem; color:var(--text-muted);"><?php echo htmlspecialchars($a['email']); ?></div>
                 </div>
                 <button class="icon-btn" onclick='openUserModal(<?php echo $adminDataJs; ?>)'>
@@ -108,7 +117,6 @@ $res_admins = pg_query($db_conn, $query_admins);
             <?php endwhile; ?>
         </div>
     </div>
-
 </div>
 
 <style> .icon-btn:hover i.fa-cog { color: var(--primary) !important; transform: rotate(90deg); transition:0.3s; } </style>

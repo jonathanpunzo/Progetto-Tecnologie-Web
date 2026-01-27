@@ -1,23 +1,21 @@
 <?php
+// FILE: index.php
 session_start();
 require_once('db.php');
 
 // 1. SECURITY CHECK
 if (!isset($_SESSION['user_id'])) { header("Location: auth.php"); exit; }
 
-// --- LOGICA SALVATAGGIO PROFILO (NUOVA PARTE) ---
+// --- LOGICA SALVATAGGIO PROFILO ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_profile'])) {
     $target_id = intval($_POST['target_id']);
     $new_name = pg_escape_string($db_conn, $_POST['name']);
     
-    // Recuperiamo il ruolo attuale di chi sta facendo la modifica
     $my_role = $_SESSION['user_role'];
     $my_id = $_SESSION['user_id'];
 
-    // Query dinamica
     $sql = "UPDATE users SET name = '$new_name'";
 
-    // SOLO L'ADMIN può cambiare i ruoli (e non può cambiare il proprio per sicurezza)
     if ($my_role == 'admin' && isset($_POST['role']) && $target_id != $my_id) {
         $new_role = pg_escape_string($db_conn, $_POST['role']);
         $sql .= ", role = '$new_role'";
@@ -25,30 +23,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_profile'])) {
 
     $sql .= " WHERE id = $target_id";
 
-    // Eseguiamo
     if (pg_query($db_conn, $sql)) {
-        // Se ho modificato me stesso, aggiorno la sessione
-        if ($target_id == $my_id) {
-            $_SESSION['user_name'] = $new_name;
-        }
-        // Refresh per vedere le modifiche
-        header("Location: index.php?page=" . ($_GET['page'] ?? 'dashboard'));
+        if ($target_id == $my_id) $_SESSION['user_name'] = $new_name;
+        $redirect_page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
+        header("Location: index.php?page=" . $redirect_page);
         exit;
     } else {
         echo "<script>alert('Errore nel salvataggio.');</script>";
     }
 }
-// ------------------------------------------------
 
 $user_name = $_SESSION['user_name'];
 $user_role = $_SESSION['user_role'];
 $user_email = $_SESSION['user_email'] ?? 'email@test.com'; 
-$user_id_session = $_SESSION['user_id']; // Ci serve per il JS
+$user_id_session = $_SESSION['user_id']; 
 $user_initials = strtoupper(substr($user_name, 0, 1));
 
-// 2. ROUTING SYSTEM
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-
 $allowed_pages = [
     'dashboard' => 'pages/dashboard.php',
     'all_tickets' => 'pages/tickets_list.php',
@@ -77,7 +68,7 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
 <body class="page-<?php echo $page; ?>">
 
     <aside class="sidebar">
-        <div class="brand"><i class="fas fa-shield-alt" style="color: #6366f1;"></i> iFantastici4</div>
+        <div class="brand"><img src="icon/logo.png" style="height:40px;"> iFantastici4</div>
         <nav class="nav-links">
             <a href="index.php?page=dashboard" class="nav-item <?php echo $page=='dashboard'?'active':''; ?>"><i class="fas fa-th-large"></i> Dashboard</a>
             
@@ -160,16 +151,20 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
                     </select>
                 </div>
 
-                <button type="submit" class="action-btn" style="background:var(--primary); color:white; border:none; margin-top:20px; width:100%;">
-                    Salva Modifiche
-                </button>
+                <div style="margin-top:25px; display:flex; gap:15px;">
+                    <button type="button" onclick="closeUserModal()" class="action-btn btn-secondary" style="flex:1;">
+                        Annulla
+                    </button>
+                    <button type="submit" class="action-btn btn-primary" style="flex:1.5;">
+                        Salva Modifiche
+                    </button>
+                </div>
             </form>
 
         </div>
     </div>
 
     <script>
-        // Dati sessione corrente
         const currentUser = {
             id: <?php echo $user_id_session; ?>,
             name: "<?php echo htmlspecialchars($user_name); ?>",
@@ -178,48 +173,39 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
             initials: "<?php echo $user_initials; ?>"
         };
 
-        function toggleMenu() {
-            document.getElementById("dropdownInfo").classList.toggle("show");
-        }
+        function toggleMenu() { document.getElementById("dropdownInfo").classList.toggle("show"); }
 
         function openUserModal(data) {
             const modal = document.getElementById('userModal');
             let user = {};
 
-            // 1. Capire chi stiamo modificando
             if (data === 'me') {
                 user = currentUser;
                 document.getElementById('modalTitle').innerText = "Il Tuo Profilo";
             } else {
-                user = data; // Dati passati dalla lista admin
+                user = data;
                 document.getElementById('modalTitle').innerText = "Modifica Utente";
             }
 
-            // 2. Popolare i campi
             document.getElementById('modalTargetId').value = user.id;
             document.getElementById('modalName').value = user.name;
             document.getElementById('modalEmail').value = user.email;
             document.getElementById('modalRole').value = user.role;
             document.getElementById('modalAvatar').innerText = user.initials;
 
-            // 3. Logica Permessi (Chi può modificare cosa?)
             const roleSelect = document.getElementById('modalRole');
-            
-            // Regola: Solo ADMIN può cambiare ruoli, e NON il proprio ruolo
             if (currentUser.role === 'admin' && user.id != currentUser.id) {
-                roleSelect.disabled = false; // Abilita modifica ruolo
+                roleSelect.disabled = false;
                 roleSelect.style.cursor = 'pointer';
                 roleSelect.style.opacity = '1';
             } else {
-                roleSelect.disabled = true; // Disabilita
+                roleSelect.disabled = true;
                 roleSelect.style.cursor = 'not-allowed';
                 roleSelect.style.opacity = '0.7';
             }
 
-            // Mostra modale
             modal.style.display = 'flex';
             setTimeout(() => { modal.classList.add('show'); }, 10);
-            
             document.getElementById("dropdownInfo").classList.remove("show");
         }
 

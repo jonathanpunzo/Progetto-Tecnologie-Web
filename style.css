@@ -239,10 +239,67 @@ p { color: var(--text-muted); line-height: 1.5; }
 
 .stat-value { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin-top: auto; }
 
-/* Buttons */
-.action-btn, .icon-btn { cursor: pointer; border: none; background: transparent; transition: all 0.2s; }
-.icon-btn { font-size: 1.1rem; color: var(--text-muted); padding: 5px; border-radius: 6px; }
-.icon-btn:hover { color: var(--primary); background: var(--bg-body); }
+/* ======================================================
+   --- BOTTONI GLOBALI (UI KIT) ---
+   ====================================================== */
+
+/* Base per tutti i bottoni d'azione */
+.action-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 14px 20px; 
+    border-radius: 12px;
+    font-weight: 600; font-size: 0.95rem;
+    cursor: pointer; transition: all 0.2s ease;
+    border: 1px solid transparent;
+    font-family: inherit;
+}
+
+/* 1. Bottone Primario (Viola - per "Salva", "Invia") */
+.btn-primary {
+    background: var(--primary); 
+    color: white;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+}
+
+/* 2. Bottone Secondario (Grigio - per "Annulla") */
+.btn-secondary {
+    background: #f1f5f9; 
+    color: var(--text-muted);
+}
+.btn-secondary:hover {
+    background: #e2e8f0; 
+    color: var(--text-main);
+}
+
+/* 3. Bottone Outline (Bianco - per Dashboard Quick Actions) */
+.btn-outline {
+    background: white; 
+    border: 1px solid var(--border); 
+    color: var(--text-main);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    width: 100%; /* Espande nella dashboard */
+    margin-bottom: 10px;
+}
+.btn-outline:hover {
+    border-color: var(--primary); 
+    color: var(--primary);
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+}
+
+/* Icon Button (Rotelline, Cestini) */
+.icon-btn { 
+    background: transparent; border: none; 
+    cursor: pointer; padding: 8px; border-radius: 8px; 
+    color: var(--text-muted); transition: all 0.2s; font-size: 1rem;
+}
+.icon-btn:hover { background: #f1f5f9; color: var(--primary); }
+
 
 /* Badges */
 .badge {
