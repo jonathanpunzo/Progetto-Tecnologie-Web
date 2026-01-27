@@ -46,25 +46,41 @@ $recent_tickets = pg_query($db_conn, $query_recent);
 ?>
 
 <style>
+
     .dash-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 3 Colonne uguali */
-        gap: 25px;
-        margin-bottom: 30px;
+        grid-template-columns: repeat(3, 1fr); /* 3 colonne fisse */
+        /* height viene gestito dal flexbox nel CSS principale ora */
+    }
+
+    /* Utility */
+    .span-2 { grid-column: span 2; }
+    
+    /* Stile specifico per i grafici interni che non è nel CSS globale */
+    .bar-chart {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        height: 120px;
+        margin-top: auto; /* Spinge in basso */
+        padding-top: 20px;
     }
     
-    /* Layout Responsivo: su mobile diventa 1 colonna */
-    @media (max-width: 1100px) { .dash-grid { grid-template-columns: 1fr; } }
-
-    .dash-card {
+    /* Stile bottoni azioni rapide */
+    .action-btn {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        width: 100%; padding: 15px; margin-bottom: 10px;
+        border: 1px solid #e2e8f0; border-radius: 12px;
+        background: #f8fafc; color: var(--text-main); font-weight: 600;
+        cursor: pointer; 
+        transition: all 0.2s ease;
+    }
+    .action-btn:hover {
         background: white;
-        border-radius: var(--radius);
-        padding: 25px;
-        box-shadow: var(--card-shadow);
-        border: 1px solid #f1f5f9;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: scale(1.02); /* Leggero ingrandimento */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
 
     /* Grafico a Barre CSS */
@@ -112,7 +128,6 @@ $recent_tickets = pg_query($db_conn, $query_recent);
     
     /* Utility */
     .span-2 { grid-column: span 2; }
-    @media (max-width: 1100px) { .span-2 { grid-column: span 1; } }
 </style>
 
 <div class="dash-grid">

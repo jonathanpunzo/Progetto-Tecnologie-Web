@@ -156,6 +156,7 @@ ul { list-style: none; }
     padding: 10px;
     display: none;
     border: 1px solid #e2e8f0;
+    z-index: 2000;
 }
 .dropdown-content.show { display: block; animation: fadeIn 0.2s; }
 .dropdown-content a {
@@ -164,7 +165,7 @@ ul { list-style: none; }
 }
 .dropdown-content a:hover { background: #f8fafc; color: var(--primary); }
 
-/* --- DASHBOARD GRID --- */
+/* --- DASHBOARD GRID & COMPONENTS --- */
 .page-container { padding: 30px; }
 
 .stats-grid {
@@ -183,7 +184,7 @@ ul { list-style: none; }
     flex-direction: column;
     justify-content: space-between;
     height: 140px;
-    border: 1px solid white; /* Border per light mode */
+    border: 1px solid white; 
 }
 
 .stat-title { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
@@ -217,3 +218,151 @@ tr:last-child td { border-bottom: none; }
 .badge-progress { background: #ffedd5; color: #9a3412; }
 
 @keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+/* ======================================================
+   --- NUOVO STILE GRAFICO BARRE "DAILY TICKETS" ---
+   ====================================================== */
+.bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 180px;
+    padding-top: 30px;
+    gap: 10px;
+}
+
+.bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+    justify-content: flex-end;
+    position: relative;
+    cursor: pointer;
+}
+
+/* Barre */
+.bar {
+    width: 60%; /* Barra bella larga */
+    max-width: 24px; /* Larghezza massima */
+    background-color: #e2e8f0;
+    border-radius: 8px; /* Arrotondamento stile Apple/Modern */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.bar.active {
+    background-color: var(--primary);
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+}
+
+.bar-group:hover .bar { transform: scaleY(1.05); background-color: #cbd5e1; }
+.bar-group:hover .bar.active { background-color: var(--primary-dark); }
+
+/* Date */
+.bar-meta { margin-top: 12px; text-align: center; display: flex; flex-direction: column; }
+.bar-meta .day { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
+.bar-meta .month { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+
+/* Tooltip */
+.tooltip {
+    position: absolute; top: -35px; left: 50%; transform: translateX(-50%) translateY(10px);
+    background: #1e293b; color: white; padding: 4px 8px; border-radius: 6px;
+    font-size: 0.75rem; font-weight: bold; opacity: 0; transition: all 0.2s; pointer-events: none; white-space: nowrap;
+}
+.tooltip::after {
+    content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+    border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid #1e293b;
+}
+.bar-group:hover .tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+
+/* ======================================================
+   --- DASHBOARD PRO: AUTO-FIT + ANIMAZIONI + HOVER ---
+   ====================================================== */
+
+/* 1. ANIMAZIONI KEYFRAMES */
+@keyframes slideUpFade {
+    0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 2. BLOCCO PAGINA (Layout Fisso) */
+html:has(body.page-dashboard),
+body.page-dashboard {
+    height: 100vh !important;
+    width: 100vw !important;
+    overflow: hidden !important;
+    padding-bottom: 0 !important;
+}
+
+/* 3. STRUTTURA FLESSIBILE */
+body.page-dashboard .main-content {
+    height: 100vh !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background-color: #f8fafc;
+}
+
+/* 4. HEADER FISSO */
+body.page-dashboard .top-header {
+    flex: 0 0 auto !important;
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+}
+
+/* 5. CONTENITORE CENTRALE (Padding & Spazi) */
+body.page-dashboard .page-container {
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 30px 40px !important; 
+    gap: 30px;
+    height: 100%;
+}
+
+/* 6. GRIGLIE ELASTICHE */
+body.page-dashboard .dash-grid {
+    margin-bottom: 0 !important;
+    flex-grow: 1;
+    gap: 30px !important;
+}
+
+/* 7. STILE DELLE CARD (Animazioni & Hover) */
+body.page-dashboard .dash-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: slideUpFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 25px;
+}
+
+/* 8. EFFETTO HOVER FIGO */
+body.page-dashboard .dash-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+}
+
+/* --- RITARDI ANIMAZIONE (Effetto Cascata) --- */
+body.page-dashboard .dash-grid:nth-child(1) .dash-card:nth-child(1) { animation-delay: 0.1s; }
+body.page-dashboard .dash-grid:nth-child(1) .dash-card:nth-child(2) { animation-delay: 0.2s; }
+body.page-dashboard .dash-grid:nth-child(1) .dash-card:nth-child(3) { animation-delay: 0.3s; }
+body.page-dashboard .dash-grid:nth-child(2) .dash-card:nth-child(1) { animation-delay: 0.4s; }
+body.page-dashboard .dash-grid:nth-child(2) .dash-card:nth-child(2) { animation-delay: 0.5s; }
+
+/* --- SCALING AUTOMATICO (Zoom) --- */
+@media (max-height: 950px) { body.page-dashboard .page-container { zoom: 0.90; } }
+@media (max-height: 850px) { body.page-dashboard .page-container { zoom: 0.80; } }
+@media (max-height: 750px) { body.page-dashboard .page-container { zoom: 0.75; } }

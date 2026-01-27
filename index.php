@@ -40,8 +40,9 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
 
+<body class="page-<?php echo $page; ?>">
+        
     <aside class="sidebar">
         <div class="brand">
             <i class="fas fa-shield-alt" style="color: #6366f1;"></i> iFantastici4
