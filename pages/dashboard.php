@@ -1,27 +1,27 @@
 <?php
 // FILE: pages/dashboard.php
 
-// --- 1. LOGICA PHP (Recupero Dati dal DB) ---
+// --- 1. LOGICA PHP ---
 
-// A. Statistiche Generali
+// A. Statistiche (Contiamo SOLO: open, resolved, closed)
 $query_stats = "SELECT 
     COUNT(*) as total,
-    SUM(CASE WHEN status = 'open' OR status = 'in-progress' THEN 1 ELSE 0 END) as active,
+    SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open_cnt,
     SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved,
     SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) as closed
 FROM tickets";
 $stats = pg_fetch_assoc(pg_query($db_conn, $query_stats));
 
 $total = $stats['total'] > 0 ? $stats['total'] : 1;
-$perc_active = round(($stats['active'] / $total) * 100);
+$perc_open = round(($stats['open_cnt'] / $total) * 100);
 $perc_resolved = round(($stats['resolved'] / $total) * 100);
 $perc_closed = round(($stats['closed'] / $total) * 100);
 
-// B. Totale Clienti
+// B. Clienti
 $query_clients = "SELECT COUNT(*) FROM users WHERE role = 'user'";
 $total_clients = pg_fetch_result(pg_query($db_conn, $query_clients), 0, 0);
 
-// C. Dati Grafico "Daily Tickets"
+// C. Daily Tickets
 $daily_data = [];
 for ($i = 6; $i >= 0; $i--) {
     $date = date('Y-m-d', strtotime("-$i days"));
@@ -45,10 +45,7 @@ $recent_tickets = pg_query($db_conn, $query_recent);
 ?>
 
 <style>
-    .dash-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-    }
+    .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
     .span-2 { grid-column: span 2; }
 
     .progress-item { margin-bottom: 20px; }
@@ -122,10 +119,10 @@ $recent_tickets = pg_query($db_conn, $query_recent);
             
             <div class="progress-item">
                 <div class="progress-label">
-                    <span>In Lavorazione</span> <span><?php echo $perc_active; ?>%</span>
+                    <span>Aperti</span> <span><?php echo $perc_open; ?>%</span>
                 </div>
                 <div class="progress-track">
-                    <div class="progress-fill" style="width: <?php echo $perc_active; ?>%; background: #f97316;"></div>
+                    <div class="progress-fill" style="width: <?php echo $perc_open; ?>%; background: #f97316;"></div>
                 </div>
             </div>
 
@@ -158,10 +155,10 @@ $recent_tickets = pg_query($db_conn, $query_recent);
         <div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
             <div class="activity-row">
                 <div>
-                    <div class="activity-label">Ticket Attivi</div>
-                    <div class="activity-sub" style="color:green;">In coda ora</div>
+                    <div class="activity-label">Ticket Aperti</div>
+                    <div class="activity-sub" style="color:var(--primary);">Da gestire</div>
                 </div>
-                <div class="big-number"><?php echo $stats['active']; ?></div>
+                <div class="big-number"><?php echo $stats['open_cnt']; ?></div>
             </div>
             
             <hr style="border:0; border-top:1px solid #f1f5f9; margin: 20px 0;">
@@ -169,7 +166,7 @@ $recent_tickets = pg_query($db_conn, $query_recent);
             <div class="activity-row">
                 <div>
                     <div class="activity-label">Clienti</div>
-                    <div class="activity-sub" style="color:var(--primary);">Registrati</div>
+                    <div class="activity-sub" style="color:var(--text-muted);">Totali</div>
                 </div>
                 <div class="big-number"><?php echo $total_clients; ?></div>
             </div>
@@ -202,12 +199,12 @@ $recent_tickets = pg_query($db_conn, $query_recent);
                     <td><?php echo htmlspecialchars($t['author']); ?></td>
                     <td>
                         <?php 
-                        // LOGICA COLORI PALLINO
-                        $status_color = '#f97316'; // Default Arancione (Open/In-progress)
-                        if ($t['status'] == 'resolved') $status_color = '#22c55e'; // Verde
-                        if ($t['status'] == 'closed')   $status_color = '#ef4444'; // Rosso
+                        $st = $t['status'];
+                        $color = '#f97316'; // Open = Arancio
+                        if ($st == 'resolved') $color = '#22c55e'; // Verde
+                        if ($st == 'closed')   $color = '#ef4444'; // Rosso
                         ?>
-                        <span style="color:<?php echo $status_color; ?>; font-weight:bold; font-size:0.85rem;">● <?php echo ucfirst($t['status']); ?></span>
+                        <span style="color:<?php echo $color; ?>; font-weight:bold; font-size:0.85rem;">● <?php echo ucfirst($st); ?></span>
                     </td>
                     <td style="text-align:right;">
                         <a href="index.php?page=ticket_details&id=<?php echo $t['id']; ?>" style="color:var(--text-muted);"><i class="fas fa-chevron-right"></i></a>

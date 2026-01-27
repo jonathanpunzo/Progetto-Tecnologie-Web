@@ -77,7 +77,6 @@ if(!$ticket) echo "Ticket non trovato.";
                     <label style="font-size:0.8rem; font-weight:bold;">Cambia Stato:</label>
                     <select name="new_status" onchange="this.form.submit()" style="width:100%; padding:8px; margin-top:5px; border-radius:5px; border:1px solid #ccc;">
                         <option value="open" <?php echo $ticket['status']=='open'?'selected':''; ?>>Aperto</option>
-                        <option value="in-progress" <?php echo $ticket['status']=='in-progress'?'selected':''; ?>>In Corso</option>
                         <option value="resolved" <?php echo $ticket['status']=='resolved'?'selected':''; ?>>Risolto</option>
                         <option value="closed" <?php echo $ticket['status']=='closed'?'selected':''; ?>>Chiuso</option>
                     </select>
