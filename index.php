@@ -2,29 +2,41 @@
 session_start();
 require_once('db.php');
 
-// Security Check
+// 1. SECURITY CHECK
+// Se l'utente non è loggato, lo rispediamo al login (auth.php)
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth.php");
     exit;
 }
 
+// Recuperiamo i dati dell'utente dalla sessione
 $user_name = $_SESSION['user_name'];
-$user_role = $_SESSION['user_role'];
+$user_role = $_SESSION['user_role']; // 'admin' oppure 'user'
 
-// --- LOGICA DI NAVIGAZIONE (ROUTING) ---
+// 2. ROUTING SYSTEM (Il vigile urbano)
+// Qui decidiamo quale file caricare in base al parametro ?page=...
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 
-// Whitelist delle pagine consentite
+// Whitelist: Lista delle pagine autorizzate e a quale file corrispondono
 $allowed_pages = [
-    'dashboard'     => 'pages/dashboard.php',
-    'all_tickets'   => 'pages/tickets_list.php',
-    'ticket_details'=> 'pages/ticket_details.php',
-    'users_stats'   => 'pages/users_admin.php',
-    'new_ticket'    => 'pages/new_ticket.php',
-    'chi_siamo'     => 'pages/chi_siamo.php'
+    'dashboard'      => 'pages/dashboard.php',
+    
+    // Admin
+    'all_tickets'    => 'pages/tickets_list.php', // Tutti i ticket
+    'users_stats'    => 'pages/users_admin.php',  // Gestione Utenti
+    
+    // User
+    'new_ticket'     => 'pages/new_ticket.php',   // Crea Ticket
+    'my_tickets'     => 'pages/tickets_list.php', // I Miei Ticket
+    'community'      => 'pages/tickets_list.php', // Community (placeholder)
+    
+    // Common
+    'closed_tickets' => 'pages/tickets_list.php', // Ticket Chiusi (usa filtro)
+    'ticket_details' => 'pages/ticket_details.php',
+    'chi_siamo'      => 'pages/chi_siamo.php'
 ];
 
-// Fallback se la pagina non esiste
+// Se la pagina richiesta esiste nella lista, usiamo quel file. Altrimenti torniamo alla dashboard.
 $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : 'pages/dashboard.php';
 ?>
 
@@ -36,39 +48,63 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
     <title>Dashboard - HelpDesk iFantastici4</title>
     
     <link rel="icon" type="image/png" href="icon/favicon.png">
-
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body class="page-<?php echo $page; ?>">
-        
+
     <aside class="sidebar">
         <div class="brand">
             <i class="fas fa-shield-alt" style="color: #6366f1;"></i> iFantastici4
         </div>
 
         <nav class="nav-links">
+            
             <a href="index.php?page=dashboard" class="nav-item <?php echo $page=='dashboard'?'active':''; ?>">
                 <i class="fas fa-th-large"></i> Dashboard
             </a>
 
             <?php if ($user_role == 'admin'): ?>
+                
+                <div class="nav-separator">AMMINISTRAZIONE</div>
+                
                 <a href="index.php?page=all_tickets" class="nav-item <?php echo $page=='all_tickets'?'active':''; ?>">
-                    <i class="fas fa-ticket-alt"></i> Tutti i Ticket
+                    <i class="fas fa-inbox"></i> Tutti i Ticket
                 </a>
+                
+                <a href="index.php?page=closed_tickets&status=closed" class="nav-item <?php echo $page=='closed_tickets'?'active':''; ?>">
+                    <i class="fas fa-check-double"></i> Ticket Chiusi
+                </a>
+
                 <a href="index.php?page=users_stats" class="nav-item <?php echo $page=='users_stats'?'active':''; ?>">
                     <i class="fas fa-users"></i> Utenti
                 </a>
+
             <?php else: ?>
+                
+                <div class="nav-separator">MENU UTENTE</div>
+
                 <a href="index.php?page=new_ticket" class="nav-item <?php echo $page=='new_ticket'?'active':''; ?>">
-                    <i class="fas fa-plus-circle"></i> Nuovo Ticket
+                    <i class="fas fa-plus-circle"></i> Crea Ticket
                 </a>
-                <a href="index.php?page=all_tickets" class="nav-item <?php echo $page=='all_tickets'?'active':''; ?>">
+
+                <a href="index.php?page=my_tickets" class="nav-item <?php echo $page=='my_tickets'?'active':''; ?>">
                     <i class="fas fa-list"></i> I Miei Ticket
                 </a>
+
+                <a href="index.php?page=community" class="nav-item <?php echo $page=='community'?'active':''; ?>">
+                    <i class="fas fa-globe"></i> Community Ticket
+                </a>
+
+                <a href="index.php?page=closed_tickets&status=closed" class="nav-item <?php echo $page=='closed_tickets'?'active':''; ?>">
+                    <i class="fas fa-archive"></i> Ticket Chiusi
+                </a>
+
             <?php endif; ?>
 
+            <div class="nav-separator">INFO</div>
+            
             <a href="index.php?page=chi_siamo" class="nav-item <?php echo $page=='chi_siamo'?'active':''; ?>">
                 <i class="fas fa-info-circle"></i> Chi Siamo
             </a>
@@ -81,35 +117,24 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
         </div>
     </aside>
 
+
     <div class="main-content">
         
         <header class="top-header">
             <div class="welcome-text">
-                <h3>Bentornato, <?php echo htmlspecialchars($user_name); ?>! 👋</h3>
+                <h3>Ciao, <?php echo htmlspecialchars($user_name); ?>! 👋</h3>
+                <small style="color:var(--text-muted)">Ruolo: <?php echo ucfirst($user_role); ?></small>
             </div>
 
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Cerca nella dashboard...">
+                <input type="text" placeholder="Cerca...">
             </div>
 
             <div class="user-menu">
-                <button class="icon-btn" onclick="copyEmail()" title="Copia Email Supporto">
-                    <i class="far fa-envelope"></i>
-                </button>
-                <button class="icon-btn"><i class="far fa-bell"></i></button>
-                
-                <div class="profile-dropdown" onclick="toggleMenu()">
+                <div class="profile-dropdown">
                     <div class="avatar">
                         <?php echo strtoupper(substr($user_name, 0, 1)); ?>
-                    </div>
-                    <div id="dropdownInfo" class="dropdown-content">
-                        <div style="padding: 10px; border-bottom: 1px solid #eee;">
-                            <strong><?php echo htmlspecialchars($user_name); ?></strong><br>
-                            <small style="color:gray"><?php echo ucfirst($user_role); ?></small>
-                        </div>
-                        <a href="#">Impostazioni</a>
-                        <a href="logout.php" style="color:red;">Esci</a>
                     </div>
                 </div>
             </div>
@@ -127,22 +152,5 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
 
     </div>
 
-    <script>
-        function toggleMenu() {
-            document.getElementById("dropdownInfo").classList.toggle("show");
-        }
-        
-        function copyEmail() {
-            navigator.clipboard.writeText("help@ifantastici4.it");
-            alert("Email copiata: help@ifantastici4.it");
-        }
-
-        // Chiudi dropdown se clicco fuori
-        window.onclick = function(event) {
-            if (!event.target.closest('.profile-dropdown')) {
-                document.getElementById("dropdownInfo").classList.remove('show');
-            }
-        }
-    </script>
 </body>
 </html>
