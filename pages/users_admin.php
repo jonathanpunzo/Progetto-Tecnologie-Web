@@ -2,10 +2,18 @@
 // FILE: pages/users_admin.php
 if ($_SESSION['user_role'] != 'admin') { echo "Accesso negato."; exit; }
 
-$query_users = "SELECT u.id, u.name, u.email, u.role, COUNT(t.id) as count FROM users u LEFT JOIN tickets t ON u.id = t.user_id WHERE u.role = 'user' GROUP BY u.id, u.name, u.email, u.role ORDER BY count DESC";
+// QUERY UTENTI
+$query_users = "SELECT u.id, u.name, u.email, u.role, COUNT(t.id) as count 
+                FROM users u LEFT JOIN tickets t ON u.id = t.user_id 
+                WHERE u.role = 'user' 
+                GROUP BY u.id, u.name, u.email, u.role 
+                ORDER BY count DESC";
 $res_users = pg_query($db_conn, $query_users);
 
-$query_admins = "SELECT u.id, u.name, u.email, u.role FROM users u WHERE u.role = 'admin' ORDER BY u.name ASC";
+// QUERY ADMIN
+$query_admins = "SELECT u.id, u.name, u.email, u.role FROM users u 
+                 WHERE u.role = 'admin' 
+                 ORDER BY u.name ASC";
 $res_admins = pg_query($db_conn, $query_admins);
 ?>
 
@@ -13,9 +21,9 @@ $res_admins = pg_query($db_conn, $query_admins);
     .users-grid-layout {
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: 3fr 1fr; /* 3 parti sopra, 1 parte sotto */
+        grid-template-rows: 3fr 1fr; /* Proporzione 3 a 1 */
         gap: 25px;
-        height: 100%;
+        height: 100%; /* Occupa tutta l'altezza disponibile */
     }
 </style>
 
@@ -61,7 +69,7 @@ $res_admins = pg_query($db_conn, $query_admins);
                             <span class="badge badge-progress"><?php echo $u['count']; ?></span>
                         </td>
                         <td style="text-align:center;">
-                            <button class="icon-btn" onclick='openUserModal(<?php echo $userDataJs; ?>)'>
+                            <button class="icon-btn" onclick='openUserModal(<?php echo $userDataJs; ?>)' title="Modifica">
                                 <i class="fas fa-cog"></i>
                             </button>
                         </td>
@@ -90,7 +98,7 @@ $res_admins = pg_query($db_conn, $query_admins);
                     <?php echo $initials; ?>
                 </div>
                 <div style="flex:1; overflow:hidden;">
-                    <div style="font-weight:700; color:var(--text-main);"><?php echo htmlspecialchars($a['name']); ?></div>
+                    <div style="font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo htmlspecialchars($a['name']); ?></div>
                     <div style="font-size:0.75rem; color:var(--text-muted);"><?php echo htmlspecialchars($a['email']); ?></div>
                 </div>
                 <button class="icon-btn" onclick='openUserModal(<?php echo $adminDataJs; ?>)'>

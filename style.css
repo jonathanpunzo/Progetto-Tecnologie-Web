@@ -144,11 +144,19 @@ button, input, select, textarea { font-family: inherit; }
    4. DASHBOARD & USERS PAGE (Locked Layout Engine)
    ========================================================================== */
 
-/* Blocchiamo lo scroll principale su queste due pagine */
+/* Blocchiamo lo scroll principale su queste pagine */
 html:has(body.page-dashboard),
 html:has(body.page-users_stats),
+html:has(body.page-all_tickets),    /* Aggiunto per coprire tutte le viste */
+html:has(body.page-my_tickets),
+html:has(body.page-closed_tickets),
+html:has(body.page-community),
 body.page-dashboard,
-body.page-users_stats {
+body.page-users_stats,
+body.page-all_tickets,
+body.page-my_tickets,
+body.page-closed_tickets,
+body.page-community {
     height: 100vh !important;
     width: 100vw !important;
     overflow: hidden !important;
@@ -156,26 +164,20 @@ body.page-users_stats {
 }
 
 /* Il contenitore principale diventa flex verticale */
-body.page-dashboard .main-content,
-body.page-users_stats .main-content {
+.main-content {
     height: 100vh !important;
     overflow: hidden !important;
 }
 
 /* Header fisso */
-body.page-dashboard .top-header,
-body.page-users_stats .top-header {
-    flex: 0 0 auto !important;
-}
+.top-header { flex: 0 0 auto !important; }
 
 /* Contenitore interno che gestisce lo spazio */
-body.page-dashboard .page-container,
-body.page-users_stats .page-container {
+.page-container {
     flex: 1 1 auto !important;
-    overflow: hidden !important; /* Lo scroll è gestito dai singoli box se necessario */
+    overflow: hidden !important; 
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly; /* Distribuisce lo spazio vert. */
     padding: 25px 40px !important;
     gap: 25px;
     height: 100%;
@@ -186,17 +188,13 @@ body.page-users_stats .page-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 25px;
-    flex-grow: 1; /* Occupa spazio disponibile */
+    flex-grow: 1; 
 }
 .span-2 { grid-column: span 2; }
 
-/* AUTO-ZOOM per schermi bassi (Laptop) */
-@media (max-height: 950px) { 
-    body.page-dashboard .page-container, body.page-users_stats .page-container { zoom: 0.90; } 
-}
-@media (max-height: 750px) { 
-    body.page-dashboard .page-container, body.page-users_stats .page-container { zoom: 0.80; } 
-}
+/* AUTO-ZOOM per schermi bassi */
+@media (max-height: 950px) { .page-container { zoom: 0.90; } }
+@media (max-height: 750px) { .page-container { zoom: 0.80; } }
 
 /* ==========================================================================
    5. CARDS & UI COMPONENTS
@@ -215,6 +213,8 @@ body.page-users_stats .page-container {
     /* Animazione Ingresso */
     animation: slideUpFade 0.6s ease-out forwards;
     opacity: 0;
+    overflow: hidden; /* Contiene tutto */
+    height: 100%; /* Si adatta alla griglia */
 }
 
 /* Hover Effect "Dashboard Style" */
@@ -224,48 +224,42 @@ body.page-users_stats .page-container {
     border-color: var(--primary);
 }
 
-/* Animazioni a cascata */
+/* Animazioni */
 .dash-grid:nth-child(1) .dash-card:nth-child(1) { animation-delay: 0.1s; }
 .dash-grid:nth-child(1) .dash-card:nth-child(2) { animation-delay: 0.2s; }
 .dash-grid:nth-child(1) .dash-card:nth-child(3) { animation-delay: 0.3s; }
-.dash-grid:nth-child(2) .dash-card:nth-child(1) { animation-delay: 0.4s; }
-.dash-grid:nth-child(2) .dash-card:nth-child(2) { animation-delay: 0.5s; }
 
 @keyframes slideUpFade {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Typography & Stats */
 h2, h3 { margin: 0 0 10px 0; color: var(--text-main); }
 p { color: var(--text-muted); line-height: 1.5; }
 
 .stat-value { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin-top: auto; }
-.stat-label { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
 /* Buttons */
-.action-btn, .icon-btn {
-    cursor: pointer; border: none; background: transparent; transition: all 0.2s;
-}
+.action-btn, .icon-btn { cursor: pointer; border: none; background: transparent; transition: all 0.2s; }
 .icon-btn { font-size: 1.1rem; color: var(--text-muted); padding: 5px; border-radius: 6px; }
 .icon-btn:hover { color: var(--primary); background: var(--bg-body); }
 
-/* Badges (Stati Ticket) */
+/* Badges */
 .badge {
     padding: 5px 12px; border-radius: 99px;
     font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
     display: inline-block; letter-spacing: 0.5px;
 }
-.badge-open     { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; } /* Arancio */
-.badge-resolved { background: #dcfce7; color: #15803d; border: 1px solid #86efac; } /* Verde */
-.badge-closed   { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; } /* Rosso */
-.badge-progress { background: var(--primary-light); color: var(--primary); border: 1px solid #c7d2fe; } /* Viola */
+.badge-open     { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+.badge-resolved { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.badge-closed   { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+.badge-progress { background: var(--primary-light); color: var(--primary); border: 1px solid #c7d2fe; }
 
 /* ==========================================================================
-   6. CHARTS & TABLES
+   6. CHARTS & TABLES (Con Padding Aggiornato)
    ========================================================================== */
 
-/* Grafico a Barre Daily Tickets */
+/* Grafico a Barre */
 .bar-chart {
     display: flex; align-items: flex-end; justify-content: space-between;
     height: 160px; gap: 8px; padding-top: 20px;
@@ -283,8 +277,6 @@ p { color: var(--text-muted); line-height: 1.5; }
 .bar.active { background: var(--primary); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
 .bar-group:hover .bar { transform: scaleY(1.1); background: #cbd5e1; }
 .bar-group:hover .bar.active { background: var(--primary-dark); }
-
-/* Tooltip Grafico */
 .tooltip {
     position: absolute; top: -35px; left: 50%; transform: translateX(-50%) translateY(5px);
     background: var(--text-main); color: white;
@@ -293,10 +285,36 @@ p { color: var(--text-muted); line-height: 1.5; }
 }
 .bar-group:hover .tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Tabelle */
+/* --- GESTIONE TABELLE E SCROLL --- */
+.card-scroll-area {
+    flex: 1; overflow-y: auto; min-height: 0;
+    padding-right: 5px; margin-top: 15px;
+    padding-bottom: 20px; /* Spazio extra in fondo per non incollare l'ultima riga */
+}
+
+/* Scrollbar personalizzata */
+.card-scroll-area::-webkit-scrollbar { width: 6px; }
+.card-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.card-scroll-area::-webkit-scrollbar-thumb { 
+    background-color: #cbd5e1; border-radius: 10px; border: 2px solid white; 
+}
+.card-scroll-area::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+
 table { width: 100%; border-collapse: collapse; }
-th { text-align: left; padding: 12px; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
-td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-main); vertical-align: middle; }
+
+/* PAGING / SPAZIATURA TABELLE */
+th { 
+    text-align: left; 
+    padding: 15px 25px; /* Aumentato padding orizzontale */
+    color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+    position: sticky; top: 0; background: white; z-index: 10;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+td { 
+    padding: 15px 25px; /* Aumentato padding orizzontale */
+    border-bottom: 1px solid var(--border); 
+    font-size: 0.9rem; color: var(--text-main); vertical-align: middle; 
+}
 tr:last-child td { border-bottom: none; }
 
 /* ==========================================================================
@@ -304,10 +322,9 @@ tr:last-child td { border-bottom: none; }
    ========================================================================== */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.6); /* Backdrop scuro */
+    background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(4px);
-    z-index: 2500;
-    display: none; align-items: center; justify-content: center;
+    z-index: 2500; display: none; align-items: center; justify-content: center;
     opacity: 0; transition: opacity 0.3s ease;
 }
 .modal-overlay.show { display: flex; opacity: 1; }
@@ -349,47 +366,4 @@ tr:last-child td { border-bottom: none; }
 }
 .modal-field input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 
-/* Animazioni globali utili */
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
-/* ======================================================
-   --- SCROLLING INTERNO (PER TABELLE E LISTE) ---
-   ====================================================== */
-
-/* 1. Wrapper per l'area che deve scorrere */
-.card-scroll-area {
-    flex: 1;                /* Occupa tutto lo spazio rimanente nella card */
-    overflow-y: auto;       /* Abilita lo scroll verticale se serve */
-    min-height: 0;          /* FIX IMPORTANTE per Flexbox annidati */
-    padding-right: 5px;     /* Spazio per non sovrapporre la scrollbar */
-    margin-top: 10px;
-}
-
-/* 2. Scrollbar personalizzata (Più elegante) */
-.card-scroll-area::-webkit-scrollbar { width: 6px; }
-.card-scroll-area::-webkit-scrollbar-track { background: transparent; }
-.card-scroll-area::-webkit-scrollbar-thumb { 
-    background-color: #cbd5e1; 
-    border-radius: 10px; 
-    border: 2px solid white; /* Crea margine visivo */
-}
-.card-scroll-area::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
-
-/* 3. Header della tabella FISSO (Sticky) */
-/* Questo fa sì che quando scorri, i titoli (Nome, Email...) restino visibili in alto */
-.card-scroll-area table thead th {
-    position: sticky;
-    top: 0;
-    background: white; /* Fondamentale: copre il testo che scorre sotto */
-    z-index: 10;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Leggera ombra sotto l'header */
-}
-
-/* 4. Fix per la Table Card generica */
-.table-card {
-    /* Assicuriamo che la card stessa usi flex verticale */
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important; /* Contiene tutto dentro i bordi arrotondati */
-    height: 100%; /* Occupa l'altezza assegnata dalla griglia */
-}
