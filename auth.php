@@ -219,7 +219,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         background: var(--primary); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
         border: none; color: white; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
     }
-    .btn-login:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); }
+    .btn-login:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); color: var(--primary); }
 
     /* Bottone Verde per Registrazione */
     .btn-register {
