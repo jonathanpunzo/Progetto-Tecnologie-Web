@@ -19,30 +19,50 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $priority = $_POST['priority'];
     $user_id = $_SESSION['user_id'];
     
-    $attachment_path = NULL;
+    $attachment_path = NULL; 
 
+    // --- 1. GESTIONE FILE LATO SERVER (SICUREZZA VERA) ---
     if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == 0) {
         $upload_dir = 'uploads/';
-        if (!is_dir($upload_dir)) mkdir($upload_dir); // Crea cartella se non esiste
-        
-        $file_name = time() . "_" . basename($_FILES['attachment']['name']);
-        $target_file = $upload_dir . $file_name;
+        if (!is_dir($upload_dir)) mkdir($upload_dir); 
 
-        if (move_uploaded_file($_FILES['attachment']['tmp_name'], $target_file)) {
-            $attachment_path = $target_file;
-        } else {
-            $msg = "Errore nel caricamento del file.";
+        // Whitelist Estensioni
+        $allowed_ext = ['jpg', 'jpeg', 'png', 'pdf'];
+        $file_info = pathinfo($_FILES['attachment']['name']);
+        $ext = strtolower($file_info['extension']);
+        $max_size = 2 * 1024 * 1024; // 2MB
+
+        if (!in_array($ext, $allowed_ext)) {
+            $msg = "Errore: Estensione non consentita! (Solo JPG, PNG, PDF)";
+        } 
+        elseif ($_FILES['attachment']['size'] > $max_size) {
+            $msg = "Errore: File troppo grande (Max 2MB).";
+        } 
+        else {
+            $clean_name = preg_replace("/[^a-zA-Z0-9\._-]/", "", basename($_FILES['attachment']['name']));
+            $file_name = time() . "_" . $clean_name;
+            $target_file = $upload_dir . $file_name;
+
+            if (move_uploaded_file($_FILES['attachment']['tmp_name'], $target_file)) {
+                $attachment_path = $target_file;
+            } else {
+                $msg = "Errore nel salvataggio del file.";
+            }
         }
     }
 
-    $query = "INSERT INTO tickets (user_id, title, description, priority, category, attachment_path) 
-              VALUES ($user_id, '$title', '$desc', '$priority', '$category', '$attachment_path')"; // Nota: per il path NULL, Postgres gestisce
+    // --- 2. INSERIMENTO NEL DB ---
+    if (empty($msg)) {
+        $path_sql = $attachment_path ? "'$attachment_path'" : "NULL";
+        $query = "INSERT INTO tickets (user_id, title, description, priority, category, attachment_path) 
+                  VALUES ($user_id, '$title', '$desc', '$priority', '$category', $path_sql)";
 
-    if (pg_query($db_conn, $query)) {
-        header("Location: index.php"); 
-        exit;
-    } else {
-        $msg = "Errore Database: " . pg_last_error($db_conn);
+        if (pg_query($db_conn, $query)) {
+            header("Location: index.php"); 
+            exit;
+        } else {
+            $msg = "Errore Database: " . pg_last_error($db_conn);
+        }
     }
 }
 ?>
@@ -78,23 +98,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="container" style="max-width: 600px;">
     <h2>🎫 Apri una nuova segnalazione</h2>
     
-    <?php if($msg) echo "<p style='color:red'>$msg</p>"; ?>
+    <?php if($msg): ?> 
+        <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <strong>Attenzione:</strong> <?php echo $msg; ?>
+        </div>
+    <?php endif; ?>
 
     <form action="new_ticket.php" method="POST" enctype="multipart/form-data" onsubmit="return validateTicket()">
         
         <div class="form-group">
             <label>Oggetto del problema</label>
-            <input type="text" id="title" name="title" required placeholder="Es. Il PC non si accende">
+            <input type="text" id="title" name="title" required placeholder="Es. Il PC non si accende" value="<?php echo isset($_POST['title']) ? htmlspecialchars($_POST['title']) : ''; ?>">
         </div>
 
         <div class="form-group">
             <label>Categoria</label>
             <select name="category" id="category">
                 <option value="">-- Seleziona Categoria --</option>
-                <option value="Hardware">Hardware</option>
-                <option value="Software">Software</option>
-                <option value="Rete">Problemi di Rete</option>
-                <option value="Account">Account e Password</option>
+                <option value="Hardware" <?php echo (isset($_POST['category']) && $_POST['category']=='Hardware') ? 'selected' : ''; ?>>Hardware</option>
+                <option value="Software" <?php echo (isset($_POST['category']) && $_POST['category']=='Software') ? 'selected' : ''; ?>>Software</option>
+                <option value="Rete" <?php echo (isset($_POST['category']) && $_POST['category']=='Rete') ? 'selected' : ''; ?>>Problemi di Rete</option>
+                <option value="Account" <?php echo (isset($_POST['category']) && $_POST['category']=='Account') ? 'selected' : ''; ?>>Account e Password</option>
             </select>
         </div>
 
@@ -110,15 +134,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="form-group">
             <label>Descrizione Dettagliata</label>
-            <textarea id="description" name="description" rows="5" required></textarea>
+            <textarea id="description" name="description" rows="5" required><?php echo isset($_POST['description']) ? htmlspecialchars($_POST['description']) : ''; ?></textarea>
         </div>
 
-        <label>Allegato (Max 2MB)</label>
+        <label>Allegato (Max 2MB - Solo PDF, JPG, PNG)</label>
+        
         <div class="drop-zone" id="dropZone">
             <p>📂 Trascina qui il file oppure clicca per selezionarlo</p>
             <span id="fileName" style="font-size: 0.9em; font-weight: bold;"></span>
         </div>
-        <input type="file" name="attachment" id="fileInput">
+
+        <input type="file" name="attachment" id="fileInput" accept=".jpg, .jpeg, .png, .pdf">
 
         <button type="submit" class="btn-style" style="width: 100%;">Invia Ticket</button>
         <p style="text-align: center; margin-top: 15px;"><a href="index.php">Annulla</a></p>
@@ -126,82 +152,87 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 
 <footer class="main-footer">
-    <p>
-        Made with <span class="heart-beat">❤️</span> da: 
-        <strong>Mattia Letteriello</strong>, 
-        <strong>Jonathan Punzo</strong>, 
-        <strong>Antonia Lucia Lamberti</strong>, 
-        <strong>Valentino Potapchuk</strong>.
-    </p>
-    <p style="opacity: 0.8; font-size: 0.85em;">Esame di Tecnologie Web 2025/2026</p>
+    <p>Made with ❤️ da: <strong>iFantastici4</strong></p>
     <a href="chi_siamo.php" class="btn-style">Chi Siamo</a>
 </footer>
 
 <script>
-    // 1. GESTIONE DRAG & DROP
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
     const fileNameDisplay = document.getElementById('fileName');
 
+    // Click sulla zona -> apre il selettore file (che ora è filtrato grazie ad 'accept')
     dropZone.addEventListener('click', () => fileInput.click());
 
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-    });
+    // Effetti grafici Drag & Drop
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
 
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('dragover');
-    });
-
+    // Rilascio file (Drag & Drop)
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
         if (e.dataTransfer.files.length > 0) {
-            fileInput.files = e.dataTransfer.files;
-            validateAndShowFile(fileInput.files[0]);
+            // Controlliamo il file PRIMA di accettarlo
+            validateAndShowFile(e.dataTransfer.files[0]);
         }
     });
 
+    // Selezione manuale
     fileInput.addEventListener('change', () => {
         if (fileInput.files.length > 0) {
             validateAndShowFile(fileInput.files[0]);
         }
     });
 
+    // VALIDAZIONE JS (Blocca estensioni e dimensioni proibite)
     function validateAndShowFile(file) {
-        // Controllo Dimensione (Max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            alert("Il file è troppo grande! Max 2MB.");
-            fileInput.value = ""; // Resetta input
-            fileNameDisplay.innerText = "";
-        } else {
-            fileNameDisplay.innerText = "✅ File pronto: " + file.name;
+        // 1. Controllo Estensione
+        const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
+        const fileExt = file.name.split('.').pop().toLowerCase();
+
+        if (!allowedExtensions.includes(fileExt)) {
+            alert("❌ File non valido! Puoi caricare solo immagini (JPG, PNG) o PDF.");
+            resetInput();
+            return;
         }
+
+        // 2. Controllo Dimensione (Max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert("❌ File troppo pesante! Il limite è 2MB.");
+            resetInput();
+            return;
+        }
+
+        // Se tutto ok:
+        // Se arrivava dal drag & drop, dobbiamo passarlo all'input file manualmente
+        // (Nota: per sicurezza i browser moderni limitano questa azione, ma per l'input nascosto funziona spesso)
+        if (fileInput.files[0] !== file) {
+            // Trick per passare il file dal drag all'input (funziona sui browser moderni)
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+        }
+
+        fileNameDisplay.innerText = "✅ File pronto: " + file.name;
+        fileNameDisplay.style.color = "green";
     }
 
-    // 2. NUOVA VALIDAZIONE FORM (Punto 92 Linee Guida)
+    function resetInput() {
+        fileInput.value = ""; // Svuota l'input
+        fileNameDisplay.innerText = "";
+    }
+
+    // Validazione finale al submit (già presente, ma per sicurezza)
     function validateTicket() {
         var title = document.getElementById('title').value;
         var cat = document.getElementById('category').value;
         var desc = document.getElementById('description').value;
 
-        if (title.length < 5) {
-            alert("L'oggetto è troppo corto. Sii più specifico.");
-            return false; // Blocca invio
-        }
-
-        if (cat === "") {
-            alert("Devi selezionare una categoria.");
-            return false;
-        }
-
-        if (desc.length < 10) {
-            alert("La descrizione è troppo breve. Spiega meglio il problema.");
-            return false;
-        }
-
-        return true; // Tutto ok, invia
+        if (title.length < 5) { alert("L'oggetto è troppo corto."); return false; }
+        if (cat === "") { alert("Devi selezionare una categoria."); return false; }
+        if (desc.length < 10) { alert("La descrizione è troppo breve."); return false; }
+        return true; 
     }
 </script>
 
