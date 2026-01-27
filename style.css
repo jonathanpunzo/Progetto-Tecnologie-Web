@@ -70,6 +70,11 @@ ul { list-style: none; }
 
 .nav-item i { width: 20px; text-align: center; }
 
+.nav-separator {
+    font-size: 0.75rem; font-weight: 700; color: #64748b;
+    margin: 20px 0 10px 10px; letter-spacing: 1px; opacity: 0.6;
+}
+
 .sidebar-footer {
     border-top: 1px solid rgba(255,255,255,0.1);
     padding-top: 20px;
@@ -94,25 +99,6 @@ ul { list-style: none; }
     position: sticky;
     top: 0;
     z-index: 900;
-}
-
-/* Search Bar */
-.search-box {
-    background: #f1f5f9;
-    padding: 8px 16px;
-    border-radius: 99px;
-    display: flex;
-    align-items: center;
-    width: 350px;
-    color: var(--text-muted);
-}
-.search-box input {
-    border: none;
-    background: transparent;
-    margin-left: 10px;
-    width: 100%;
-    outline: none;
-    color: var(--text-main);
 }
 
 /* User Menu */
@@ -209,13 +195,27 @@ th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 0.85r
 td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
 tr:last-child td { border-bottom: none; }
 
-/* Status Badges */
+/* ======================================================
+   --- STATUS BADGES (Aggiornati: Arancio, Verde, Rosso) ---
+   ====================================================== */
 .badge {
     padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
 }
-.badge-open { background: #dcfce7; color: #166534; }
-.badge-closed { background: #fee2e2; color: #991b1b; }
-.badge-progress { background: #ffedd5; color: #9a3412; }
+
+/* APERTO / IN LAVORAZIONE -> ARANCIONE */
+.badge-open { 
+    background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; 
+}
+
+/* RISOLTO -> VERDE */
+.badge-resolved { 
+    background: #dcfce7; color: #15803d; border: 1px solid #86efac; 
+}
+
+/* CHIUSO -> ROSSO */
+.badge-closed { 
+    background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; 
+}
 
 @keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
 
@@ -244,10 +244,10 @@ tr:last-child td { border-bottom: none; }
 
 /* Barre */
 .bar {
-    width: 60%; /* Barra bella larga */
-    max-width: 24px; /* Larghezza massima */
+    width: 60%;
+    max-width: 24px;
     background-color: #e2e8f0;
-    border-radius: 8px; /* Arrotondamento stile Apple/Modern */
+    border-radius: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }

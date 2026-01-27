@@ -3,7 +3,7 @@
 
 // --- 1. LOGICA PHP (Recupero Dati dal DB) ---
 
-// A. Statistiche Generali (Conteggi e Percentuali)
+// A. Statistiche Generali
 $query_stats = "SELECT 
     COUNT(*) as total,
     SUM(CASE WHEN status = 'open' OR status = 'in-progress' THEN 1 ELSE 0 END) as active,
@@ -21,7 +21,7 @@ $perc_closed = round(($stats['closed'] / $total) * 100);
 $query_clients = "SELECT COUNT(*) FROM users WHERE role = 'user'";
 $total_clients = pg_fetch_result(pg_query($db_conn, $query_clients), 0, 0);
 
-// C. Dati Grafico "Daily Tickets" (Ultimi 7 giorni)
+// C. Dati Grafico "Daily Tickets"
 $daily_data = [];
 for ($i = 6; $i >= 0; $i--) {
     $date = date('Y-m-d', strtotime("-$i days"));
@@ -39,7 +39,7 @@ while ($row = pg_fetch_assoc($res_daily)) {
 }
 $max_daily = max($daily_data) > 0 ? max($daily_data) : 1;
 
-// D. Ultimi Ticket (Tabella)
+// D. Ultimi Ticket
 $query_recent = "SELECT t.*, u.name as author FROM tickets t JOIN users u ON t.user_id = u.id ORDER BY t.created_at DESC LIMIT 4";
 $recent_tickets = pg_query($db_conn, $query_recent);
 ?>
@@ -96,7 +96,7 @@ $recent_tickets = pg_query($db_conn, $query_recent);
                 $vis_height = $height == 0 ? 5 : $height;
                 
                 $day_label = date('d', strtotime($day));
-                $month_label = date('M', strtotime($day)); // <-- AGGIUNTO IL MESE
+                $month_label = date('M', strtotime($day));
                 $is_today = ($day == $today) ? 'active' : ''; 
             ?>
                 <div class="bar-group">
@@ -105,7 +105,8 @@ $recent_tickets = pg_query($db_conn, $query_recent);
                     </div>
                     <div class="bar-meta">
                         <span class="day"><?php echo $day_label; ?></span>
-                        <span class="month"><?php echo $month_label; ?></span> </div>
+                        <span class="month"><?php echo $month_label; ?></span>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -118,12 +119,13 @@ $recent_tickets = pg_query($db_conn, $query_recent);
         </div>
         
         <div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+            
             <div class="progress-item">
                 <div class="progress-label">
                     <span>In Lavorazione</span> <span><?php echo $perc_active; ?>%</span>
                 </div>
                 <div class="progress-track">
-                    <div class="progress-fill" style="width: <?php echo $perc_active; ?>%; background: #f59e0b;"></div>
+                    <div class="progress-fill" style="width: <?php echo $perc_active; ?>%; background: #f97316;"></div>
                 </div>
             </div>
 
@@ -132,7 +134,7 @@ $recent_tickets = pg_query($db_conn, $query_recent);
                     <span>Risolti</span> <span><?php echo $perc_resolved; ?>%</span>
                 </div>
                 <div class="progress-track">
-                    <div class="progress-fill" style="width: <?php echo $perc_resolved; ?>%; background: #3b82f6;"></div>
+                    <div class="progress-fill" style="width: <?php echo $perc_resolved; ?>%; background: #22c55e;"></div>
                 </div>
             </div>
 
@@ -141,7 +143,7 @@ $recent_tickets = pg_query($db_conn, $query_recent);
                     <span>Chiusi</span> <span><?php echo $perc_closed; ?>%</span>
                 </div>
                 <div class="progress-track">
-                    <div class="progress-fill" style="width: <?php echo $perc_closed; ?>%; background: #1e293b;"></div>
+                    <div class="progress-fill" style="width: <?php echo $perc_closed; ?>%; background: #ef4444;"></div>
                 </div>
             </div>
         </div>
@@ -200,9 +202,12 @@ $recent_tickets = pg_query($db_conn, $query_recent);
                     <td><?php echo htmlspecialchars($t['author']); ?></td>
                     <td>
                         <?php 
-                        $color = ($t['status']=='open'||$t['status']=='in-progress') ? '#f59e0b' : '#3b82f6'; 
+                        // LOGICA COLORI PALLINO
+                        $status_color = '#f97316'; // Default Arancione (Open/In-progress)
+                        if ($t['status'] == 'resolved') $status_color = '#22c55e'; // Verde
+                        if ($t['status'] == 'closed')   $status_color = '#ef4444'; // Rosso
                         ?>
-                        <span style="color:<?php echo $color; ?>; font-weight:bold; font-size:0.85rem;">● <?php echo ucfirst($t['status']); ?></span>
+                        <span style="color:<?php echo $status_color; ?>; font-weight:bold; font-size:0.85rem;">● <?php echo ucfirst($t['status']); ?></span>
                     </td>
                     <td style="text-align:right;">
                         <a href="index.php?page=ticket_details&id=<?php echo $t['id']; ?>" style="color:var(--text-muted);"><i class="fas fa-chevron-right"></i></a>

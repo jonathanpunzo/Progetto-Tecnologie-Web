@@ -3,15 +3,13 @@
 $id = intval($_GET['id']);
 if(!$id) echo "<script>window.location='index.php';</script>";
 
-// LOGICA POST (Messaggi e cambi stato)
+// LOGICA POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // 1. Invia Messaggio
     if (isset($_POST['msg_text'])) {
         $msg = pg_escape_string($db_conn, $_POST['msg_text']);
         $uid = $_SESSION['user_id'];
         pg_query($db_conn, "INSERT INTO messages (ticket_id, user_id, message) VALUES ($id, $uid, '$msg')");
     }
-    // 2. Aggiorna Stato (Solo Admin)
     if (isset($_POST['new_status']) && $_SESSION['user_role'] == 'admin') {
         $st = $_POST['new_status'];
         pg_query($db_conn, "UPDATE tickets SET status = '$st' WHERE id = $id");
@@ -52,7 +50,17 @@ if(!$ticket) echo "Ticket non trovato.";
         <div class="ticket-info">
             <h4 style="margin-top:0; color:var(--text-muted)">Dettagli</h4>
             <p><strong>Autore:</strong> <?php echo $ticket['name']; ?></p>
-            <p><strong>Stato:</strong> <span class="badge badge-open"><?php echo strtoupper($ticket['status']); ?></span></p>
+            
+            <p><strong>Stato:</strong> 
+                <?php 
+                    $st = $ticket['status'];
+                    $badge_cls = 'badge-open'; // Arancio
+                    if($st == 'resolved') $badge_cls = 'badge-resolved'; // Verde
+                    if($st == 'closed')   $badge_cls = 'badge-closed';   // Rosso
+                ?>
+                <span class="badge <?php echo $badge_cls; ?>"><?php echo strtoupper($st); ?></span>
+            </p>
+
             <p><strong>Priorità:</strong> <?php echo ucfirst($ticket['priority']); ?></p>
             <p><strong>Data:</strong> <?php echo date('d/m/Y', strtotime($ticket['created_at'])); ?></p>
             <hr style="margin: 15px 0; border:0; border-top:1px solid #eee;">
@@ -80,10 +88,8 @@ if(!$ticket) echo "Ticket non trovato.";
         <div class="chat-area">
             <div class="messages-list">
                 <?php while($m = pg_fetch_assoc($msgs)): 
-                    $is_me = ($m['user_id'] == $_SESSION['user_id']); // Verifica chi ha scritto
-                    // Admin vede messaggi utente a SX, i suoi a DX. Utente vede Admin a SX, i suoi a DX.
+                    $is_me = ($m['user_id'] == $_SESSION['user_id']);
                     $style_class = $is_me ? 'msg-admin' : 'msg-user'; 
-                    // Nota: uso msg-admin per "me stesso" solo per il colore (indaco), semanticamente è "messaggio inviato"
                 ?>
                 <div class="msg-bubble <?php echo $style_class; ?>">
                     <span class="meta-date"><?php echo htmlspecialchars($m['name']); ?> • <?php echo date('H:i', strtotime($m['created_at'])); ?></span>
