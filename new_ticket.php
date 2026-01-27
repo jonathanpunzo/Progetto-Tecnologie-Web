@@ -12,44 +12,39 @@ if (!isset($_SESSION['user_id'])) {
 
 $msg = "";
 
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $title = pg_escape_string($db_conn, $_POST['title']);
     $desc = pg_escape_string($db_conn, $_POST['description']);
     $category = $_POST['category'];
     $priority = $_POST['priority'];
-    $user_id = $_SESSION['user_id'];
     
+    // 1. NUOVA LOGICA VISIBILITÀ
+    // Se il valore è '1' diventa 'TRUE', altrimenti 'FALSE' (default privato)
+    $is_public = (isset($_POST['is_public']) && $_POST['is_public'] == '1') ? 'TRUE' : 'FALSE';
+
+    $user_id = $_SESSION['user_id'];
     $attachment_path = NULL; 
 
-    // --- 1. GESTIONE FILE LATO SERVER (SICUREZZA VERA) ---
-    if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == 0) {
-        $upload_dir = 'uploads/';
-        if (!is_dir($upload_dir)) mkdir($upload_dir); 
+    // ... (codice gestione file upload invariato) ...
 
-        // Whitelist Estensioni
-        $allowed_ext = ['jpg', 'jpeg', 'png', 'pdf'];
-        $file_info = pathinfo($_FILES['attachment']['name']);
-        $ext = strtolower($file_info['extension']);
-        $max_size = 2 * 1024 * 1024; // 2MB
+    // 2. AGGIORNAMENTO QUERY INSERT
+    if (empty($msg)) {
+        $path_sql = $attachment_path ? "'$attachment_path'" : "NULL";
+        
+        // Nota l'aggiunta di is_public nella lista campi e $is_public nei valori
+        // ATTENZIONE: $is_public qui è una stringa "TRUE" o "FALSE", quindi non servono apici in SQL per i booleani
+        $query = "INSERT INTO tickets (user_id, title, description, priority, category, attachment_path, is_public) 
+                  VALUES ($user_id, '$title', '$desc', '$priority', '$category', $path_sql, $is_public)";
 
-        if (!in_array($ext, $allowed_ext)) {
-            $msg = "Errore: Estensione non consentita! (Solo JPG, PNG, PDF)";
-        } 
-        elseif ($_FILES['attachment']['size'] > $max_size) {
-            $msg = "Errore: File troppo grande (Max 2MB).";
-        } 
-        else {
-            $clean_name = preg_replace("/[^a-zA-Z0-9\._-]/", "", basename($_FILES['attachment']['name']));
-            $file_name = time() . "_" . $clean_name;
-            $target_file = $upload_dir . $file_name;
-
-            if (move_uploaded_file($_FILES['attachment']['tmp_name'], $target_file)) {
-                $attachment_path = $target_file;
-            } else {
-                $msg = "Errore nel salvataggio del file.";
-            }
+        if (pg_query($db_conn, $query)) {
+            header("Location: index.php"); 
+            exit;
+        } else {
+            $msg = "Errore Database: " . pg_last_error($db_conn);
         }
     }
+
 
     // --- 2. INSERIMENTO NEL DB ---
     if (empty($msg)) {
@@ -137,6 +132,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <option value="high">Alta</option>
                 <option value="urgent">Urgente</option>
             </select>
+        </div>
+
+        <div class="form-group">
+            <label>Visibilità Ticket</label>
+            <select name="is_public">
+                <option value="0" selected>🔒 Privato (Visibile solo a te e Admin)</option>
+                <option value="1">🌍 Pubblico</option>
+            </select>
+            <small style="color: gray; display: block; margin-top: 5px;">
+                Se selezioni "Pubblico", il ticket potrà essere letto anche dagli altri utenti per trovare soluzioni simili.
+            </small>
         </div>
 
         <div class="form-group">

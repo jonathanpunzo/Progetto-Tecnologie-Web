@@ -95,6 +95,22 @@ $res_msgs = pg_query($db_conn, $query_msgs);
         <span class="status-<?php echo $ticket['status']; ?>" style="font-size: 1.2em; border: 1px solid #ddd; padding: 5px 10px; border-radius: 20px;">
             <?php echo strtoupper($ticket['status']); ?>
         </span>
+        <?php
+        // PostgreSQL restituisce i booleani come 't' o 'f'
+        $is_pub = ($ticket['is_public'] === 't' || $ticket['is_public'] == 1);
+        ?>
+        <span style="
+            font-size: 1.2em; 
+            border: 1px solid #ddd; 
+            padding: 5px 10px; 
+            border-radius: 20px; 
+            margin-left: 10px; /* Spazio tra i due badge */
+            background-color: <?php echo $is_pub ? '#f3f4f6' : '#f3f4f6'; ?>; /* Blu chiaro se pubblico, Grigio se privato */
+            color: <?php echo $is_pub ? '#66a0e7' : '#4b4f54'; ?>; /* Testo colorato */
+        ">
+            <i class="fas <?php echo $is_pub ? 'fa-globe' : 'fa-lock'; ?>"></i> 
+            <?php echo $is_pub ? '🌍PUBBLICO' : '🔒PRIVATO'; ?>
+        </span>
         
         <p style="margin-top: 15px;"><strong>Descrizione:</strong><br><?php echo nl2br(htmlspecialchars($ticket['description'])); ?></p>
         
