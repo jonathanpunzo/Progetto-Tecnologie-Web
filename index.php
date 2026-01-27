@@ -33,12 +33,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_profile'])) {
     }
 }
 
+// DATI UTENTE CORRENTE
+$user_id_session = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'];
 $user_role = $_SESSION['user_role'];
-$user_email = $_SESSION['user_email'] ?? 'email@test.com'; 
-$user_id_session = $_SESSION['user_id']; 
 $user_initials = strtoupper(substr($user_name, 0, 1));
 
+// --- MODIFICA QUI: RECUPERO EMAIL REALE DAL DB ---
+$query_me = "SELECT email FROM users WHERE id = $user_id_session";
+$res_me = pg_query($db_conn, $query_me);
+// Se trova l'utente usa la sua email, altrimenti stringa vuota
+$user_email = ($res_me && pg_num_rows($res_me) > 0) ? pg_fetch_result($res_me, 0, 0) : 'Errore Email';
+
+
+// ROUTING
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 $allowed_pages = [
     'dashboard' => 'pages/dashboard.php',
@@ -98,7 +106,7 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
         <header class="top-header">
             <div class="welcome-text">
                 <h3>Ciao, <?php echo htmlspecialchars($user_name); ?>! 👋</h3>
-                </div>
+            </div>
             
             <div></div>
             
@@ -178,6 +186,7 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
     </div>
 
     <script>
+        // QUI USIAMO LA VARIABILE PHP $user_email AGGIORNATA
         const currentUser = {
             id: <?php echo $user_id_session; ?>,
             name: "<?php echo htmlspecialchars($user_name); ?>",
