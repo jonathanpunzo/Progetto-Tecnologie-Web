@@ -40,13 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['new_status']) && $_SES
     exit;
 }
 
-// 4. ELIMINAZIONE TICKET
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_ticket']) && $_SESSION['user_role'] == 'admin') {
-    $q_del = "DELETE FROM tickets WHERE id = $ticket_id";
-    pg_query($db_conn, $q_del);
-    header("Location: index.php");
-    exit;
-}
 
 // 5. RECUPERO MESSAGGI
 $query_msgs = "SELECT m.*, u.name, u.role FROM messages m JOIN users u ON m.user_id = u.id WHERE ticket_id = $ticket_id ORDER BY m.created_at ASC";
@@ -123,11 +116,6 @@ $res_msgs = pg_query($db_conn, $query_msgs);
                     </select>
                     <button type="submit" class="btn-style" style="border:1px solid white;">Aggiorna</button>
                 </div>
-            </form>
-            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2);">
-            <form method="POST" onsubmit="return confirm('⚠️ Sei sicuro di voler ELIMINARE definitivamente questo ticket?\nQuesta azione non può essere annullata.');">
-                <input type="hidden" name="delete_ticket" value="1">
-                <button type="submit" class="btn-delete">🗑️ Elimina Ticket</button>
             </form>
         </div>
     <?php endif; ?>
