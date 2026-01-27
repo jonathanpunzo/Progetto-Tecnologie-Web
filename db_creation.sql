@@ -64,12 +64,13 @@ INSERT INTO faqs (question, answer) VALUES
 ('Cosa significano gli stati del ticket?', 'APERTO: Segnalazione ricevuta. IN LAVORAZIONE: Un tecnico sta analizzando il problema. RISOLTO: Il problema è stato fixato. CHIUSO: La pratica è archiviata.'),
 ('Ho sbagliato categoria, cosa faccio?', 'Non preoccuparti. Se un amministratore nota che la categoria è errata (es. Hardware invece di Software), provvederà a gestirlo comunque o a reindirizzarlo al reparto corretto.'),
 ('C''è un limite per gli allegati?', 'Sì, per garantire le prestazioni del server ti chiediamo di caricare file di dimensioni contenute (max 5MB). Se necessario, usa formati compressi come ZIP.');
+
 -- UTENTI PREDEFINITI (bcrypt)
 -- Password admin: admin
 INSERT INTO users (name, email, password, role) VALUES
 ('Admin', 'admin@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'admin');
 
--- Password utente: utente
+-- Password utente: utente 
 INSERT INTO users (name, email, password, role) VALUES
 ('Utente', 'user@test.com', '$2b$10$hzRyMYnojJJ5ezGOC3ESVOgyxbHEwrZOKYcKR5k5a0j1OFS9ufUeW', 'user');
 
