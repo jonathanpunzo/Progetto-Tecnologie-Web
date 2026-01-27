@@ -94,21 +94,34 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
     </aside>
 
     <div class="main-content">
+        
         <header class="top-header">
             <div class="welcome-text">
                 <h3>Ciao, <?php echo htmlspecialchars($user_name); ?>! 👋</h3>
-                <small style="color:var(--text-muted)">Ruolo: <?php echo ucfirst($user_role); ?></small>
-            </div>
+                </div>
+            
             <div></div>
+            
             <div class="user-menu">
                 <div class="profile-dropdown" onclick="toggleMenu()">
                     <div class="avatar"><?php echo $user_initials; ?></div>
+                    
                     <div id="dropdownInfo" class="dropdown-content">
-                        <div style="padding: 10px; border-bottom: 1px solid #eee;">
-                            <strong><?php echo htmlspecialchars($user_name); ?></strong>
+                        
+                        <div class="dropdown-header">
+                            <span class="dropdown-user-name"><?php echo htmlspecialchars($user_name); ?></span>
+                            <span class="dropdown-user-role"><?php echo $user_role; ?></span>
                         </div>
-                        <a href="#" onclick="openUserModal('me')">Impostazioni</a>
-                        <a href="logout.php" style="color:red;">Esci</a>
+                        
+                        <div class="dropdown-body">
+                            <a href="#" onclick="openUserModal('me')" class="dropdown-link">
+                                <i class="fas fa-cog"></i> Impostazioni
+                            </a>
+                            <a href="logout.php" class="dropdown-link logout">
+                                <i class="fas fa-sign-out-alt"></i> Esci
+                            </a>
+                        </div>
+
                     </div>
                 </div>
             </div>
