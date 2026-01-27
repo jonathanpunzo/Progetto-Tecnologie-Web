@@ -1,18 +1,29 @@
 <?php
 // FILE: pages/dashboard.php
 
+// 0. DATI UTENTE CORRENTE
+$my_id = $_SESSION['user_id'];
+$is_admin = ($_SESSION['user_role'] == 'admin');
+
 // 1. TRADUZIONE MESI
 $mesi_it = [
     'Jan'=>'Gen', 'Feb'=>'Feb', 'Mar'=>'Mar', 'Apr'=>'Apr', 'May'=>'Mag', 'Jun'=>'Giu',
     'Jul'=>'Lug', 'Aug'=>'Ago', 'Sep'=>'Set', 'Oct'=>'Ott', 'Nov'=>'Nov', 'Dec'=>'Dic'
 ];
 
-// 2. QUERY STATISTICHE
+// --- COSTRUZIONE QUERY IN BASE AL RUOLO ---
+
+// Clausole WHERE dinamiche
+$sql_where_stats = $is_admin ? "" : "WHERE user_id = $my_id";
+$sql_where_chart = $is_admin ? "WHERE" : "WHERE user_id = $my_id AND";
+$sql_where_list  = $is_admin ? "" : "WHERE t.user_id = $my_id";
+
+// 2. QUERY STATISTICHE (Conteggi e Percentuali)
 $query_stats = "SELECT COUNT(*) as total, 
                 SUM(CASE WHEN status = 'open' OR status = 'in-progress' THEN 1 ELSE 0 END) as active, 
                 SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved, 
                 SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) as closed 
-                FROM tickets";
+                FROM tickets $sql_where_stats";
 $stats = pg_fetch_assoc(pg_query($db_conn, $query_stats));
 
 $total = $stats['total'] > 0 ? $stats['total'] : 1;
@@ -20,11 +31,30 @@ $perc_active = round(($stats['active'] / $total) * 100);
 $perc_resolved = round(($stats['resolved'] / $total) * 100);
 $perc_closed = round(($stats['closed'] / $total) * 100);
 
-// Clienti
-$query_clients = "SELECT COUNT(*) FROM users WHERE role = 'user'";
-$total_clients = pg_fetch_result(pg_query($db_conn, $query_clients), 0, 0);
+// Dati specifici per il BOX 3 (Attività)
+if ($is_admin) {
+    // Admin: Conta i clienti totali
+    $query_clients = "SELECT COUNT(*) FROM users WHERE role = 'user'";
+    $box3_num_right = pg_fetch_result(pg_query($db_conn, $query_clients), 0, 0);
+    $box3_label_right = "Clienti Totali";
+    $box3_sub_right = "Registrati al portale";
+    
+    $box3_num_left = $stats['active'];
+    $box3_label_left = "Ticket in Coda";
+    $box3_sub_left = "Richiedono attenzione";
+} else {
+    // User: Conta i ticket risolti storicamente (Resolved + Closed)
+    $box3_num_right = $stats['resolved'] + $stats['closed'];
+    $box3_label_right = "Storico Risolti";
+    $box3_sub_right = "Tue pratiche completate";
 
-// 3. QUERY GRAFICO
+    $box3_num_left = $stats['active'];
+    $box3_label_left = "In Attesa";
+    $box3_sub_left = "Ticket aperti ora";
+}
+
+
+// 3. QUERY GRAFICO (Cronologia)
 $daily_data = [];
 for ($i = 6; $i >= 0; $i--) {
     $date = date('Y-m-d', strtotime("-$i days"));
@@ -32,7 +62,7 @@ for ($i = 6; $i >= 0; $i--) {
 }
 $query_daily = "SELECT to_char(created_at, 'YYYY-MM-DD') as day, COUNT(*) as cnt 
                 FROM tickets 
-                WHERE created_at >= NOW() - INTERVAL '7 days' 
+                $sql_where_chart created_at >= NOW() - INTERVAL '7 days' 
                 GROUP BY day";
 $res_daily = pg_query($db_conn, $query_daily);
 while ($row = pg_fetch_assoc($res_daily)) {
@@ -40,24 +70,20 @@ while ($row = pg_fetch_assoc($res_daily)) {
 }
 $max_daily = max($daily_data) > 0 ? max($daily_data) : 1;
 
-// 4. QUERY RECENTI (5 Ticket)
+// 4. QUERY RECENTI (Lista 5 Ticket)
 $query_recent = "SELECT t.*, u.name as author 
                  FROM tickets t 
                  JOIN users u ON t.user_id = u.id 
+                 $sql_where_list
                  ORDER BY t.created_at DESC LIMIT 5";
 $recent_tickets = pg_query($db_conn, $query_recent);
 ?>
 
 <style>
-    /* CHART STYLES AGGIORNATI */
+    /* CHART STYLES */
     .chart-container {
         display: flex; align-items: flex-end; justify-content: space-between;
-        /* Rimosso height fissa, ora usa flex: 1 per riempire lo spazio */
-        flex: 1; 
-        min-height: 220px; /* Altezza minima aumentata per alzare il grafico */
-        padding-top: 10px; /* Meno padding sopra */
-        gap: 12px;
-        margin-top: 10px;
+        flex: 1; min-height: 220px; padding-top: 10px; gap: 12px; margin-top: 10px;
     }
     .chart-column {
         flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
@@ -115,7 +141,7 @@ $recent_tickets = pg_query($db_conn, $query_recent);
     
     <div class="dash-card">
         <div>
-            <h3>Cronologia Ticket</h3>
+            <h3><?php echo $is_admin ? "Cronologia Ticket" : "La tua Cronologia"; ?></h3>
             <p style="font-size:0.85rem; color:var(--text-muted)">Andamento ultimi 7 giorni</p>
         </div>
         
@@ -147,7 +173,7 @@ $recent_tickets = pg_query($db_conn, $query_recent);
 
     <div class="dash-card">
         <div>
-            <h3>Stato dei Ticket</h3>
+            <h3><?php echo $is_admin ? "Stato dei Ticket" : "I tuoi Progressi"; ?></h3>
             <p style="font-size:0.85rem; color:var(--text-muted);">Panoramica risoluzioni</p>
         </div>
         <div style="display: flex; flex-direction: column; justify-content: space-evenly; height: 100%; padding-top: 10px;">
@@ -169,26 +195,28 @@ $recent_tickets = pg_query($db_conn, $query_recent);
     <div class="dash-card">
         <div>
             <h3>Attività</h3>
-            <p style="font-size:0.85rem; color:var(--text-muted)">Metriche della piattaforma</p>
+            <p style="font-size:0.85rem; color:var(--text-muted)">Info in tempo reale</p>
         </div>
         <div style="display: flex; flex-direction: column; justify-content: space-evenly; height: 100%; padding: 10px 0;">
+            
             <div class="activity-row">
                 <div>
-                    <div class="activity-label">Ticket in Coda</div>
-                    <div class="activity-sub" style="color:#f97316;">Richiedono attenzione</div>
+                    <div class="activity-label"><?php echo $box3_label_left; ?></div>
+                    <div class="activity-sub" style="color:#f97316;"><?php echo $box3_sub_left; ?></div>
                 </div>
-                <div class="big-number"><?php echo $stats['active']; ?></div>
+                <div class="big-number"><?php echo $box3_num_left; ?></div>
             </div>
             
             <hr style="border:0; border-top:1px solid #f1f5f9; width:100%; opacity: 0.5;">
             
             <div class="activity-row">
                 <div>
-                    <div class="activity-label">Clienti Totali</div>
-                    <div class="activity-sub" style="color:var(--primary);">Registrati al portale</div>
+                    <div class="activity-label"><?php echo $box3_label_right; ?></div>
+                    <div class="activity-sub" style="color:var(--primary);"><?php echo $box3_sub_right; ?></div>
                 </div>
-                <div class="big-number"><?php echo $total_clients; ?></div>
+                <div class="big-number"><?php echo $box3_num_right; ?></div>
             </div>
+
         </div>
     </div>
 
@@ -199,7 +227,9 @@ $recent_tickets = pg_query($db_conn, $query_recent);
     <div class="dash-card span-2">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-shrink: 0;">
             <h3>Ultimi Aggiornamenti</h3>
-            <span style="background:#f1f5f9; padding:5px 12px; border-radius:8px; font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform: uppercase;">Oggi</span>
+            <span style="background:#f1f5f9; padding:5px 12px; border-radius:8px; font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform: uppercase;">
+                Oggi
+            </span>
         </div>
         
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; margin-top: 15px;">
@@ -245,15 +275,25 @@ $recent_tickets = pg_query($db_conn, $query_recent);
             <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Strumenti frequenti</p>
         </div>
         <div style="display: flex; flex-direction: column; justify-content: center; gap: 15px; flex: 1;">
+            
             <button class="action-btn btn-outline" onclick="window.location.href='index.php?page=new_ticket'">
                 <i class="fas fa-plus-circle" style="color:var(--primary);"></i> Crea Ticket
             </button>
+            
             <button class="action-btn btn-outline">
                 <i class="fas fa-file-csv" style="color:#10b981;"></i> Esporta Report CSV
             </button>
-            <button class="action-btn btn-outline">
-                <i class="fas fa-user-plus" style="color:#f59e0b;"></i> Invita Utente
-            </button>
+            
+            <?php if ($is_admin): ?>
+                <button class="action-btn btn-outline">
+                    <i class="fas fa-user-plus" style="color:#f59e0b;"></i> Invita Utente
+                </button>
+            <?php else: ?>
+                <button class="action-btn btn-outline" onclick="openUserModal('me')">
+                    <i class="fas fa-user-cog" style="color:#6366f1;"></i> Il mio Profilo
+                </button>
+            <?php endif; ?>
+
         </div>
     </div>
 </div>
