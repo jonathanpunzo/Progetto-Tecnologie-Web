@@ -1,15 +1,29 @@
-/* --- GLOBAL & RESET --- */
+/* ==========================================================================
+   1. GLOBAL VARIABLES & RESET
+   ========================================================================== */
 :root {
-    --primary: #4f46e5;       /* Indaco moderno */
+    /* Palette Colori */
+    --primary: #4f46e5;       /* Indaco (Brand) */
     --primary-dark: #4338ca;
+    --primary-light: #e0e7ff;
+    
+    --success: #22c55e;       /* Verde (Resolved) */
+    --warning: #f97316;       /* Arancio (Open) */
+    --danger: #ef4444;        /* Rosso (Closed) */
+    
+    /* Layout Colors */
     --sidebar-bg: #0f172a;    /* Scuro profondo */
-    --sidebar-width: 260px;
-    --header-height: 70px;
-    --bg-body: #f3f4f6;       /* Grigio chiarissimo */
+    --bg-body: #f8fafc;       /* Grigio chiarissimo */
     --text-main: #1e293b;
     --text-muted: #64748b;
-    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --radius: 12px;
+    --border: #e2e8f0;
+    
+    /* Dimensioni & Effetti */
+    --sidebar-width: 260px;
+    --header-height: 70px;
+    --radius: 16px;           /* Arrotondamento moderno */
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --hover-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,344 +39,357 @@ body {
 
 a { text-decoration: none; color: inherit; transition: 0.2s; }
 ul { list-style: none; }
+button, input, select, textarea { font-family: inherit; }
 
-/* --- SIDEBAR FISSA --- */
+/* ==========================================================================
+   2. SIDEBAR NAVIGATION
+   ========================================================================== */
 .sidebar {
     width: var(--sidebar-width);
     background-color: var(--sidebar-bg);
     color: #cbd5e1;
     height: 100vh;
     position: fixed;
-    left: 0;
-    top: 0;
+    left: 0; top: 0;
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 25px 20px;
     z-index: 1000;
 }
 
 .brand {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: white;
-    margin-bottom: 40px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    font-size: 1.5rem; font-weight: 800; color: white;
+    margin-bottom: 40px; display: flex; align-items: center; gap: 12px;
 }
 
 .nav-links { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 
 .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    font-weight: 500;
-    color: #94a3b8;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 12px;
+    font-weight: 500; color: #94a3b8; transition: all 0.2s ease;
 }
 
 .nav-item:hover, .nav-item.active {
-    background: rgba(255,255,255,0.1);
-    color: white;
+    background: rgba(255,255,255,0.1); color: white;
 }
+.nav-item.active { border-left: 3px solid var(--primary); }
 
 .nav-item i { width: 20px; text-align: center; }
 
 .nav-separator {
-    font-size: 0.75rem; font-weight: 700; color: #64748b;
-    margin: 20px 0 10px 10px; letter-spacing: 1px; opacity: 0.6;
+    font-size: 0.7rem; font-weight: 700; color: #64748b;
+    margin: 25px 0 10px 12px; letter-spacing: 1px; text-transform: uppercase;
 }
 
 .sidebar-footer {
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;
 }
 
-/* --- MAIN WRAPPER & HEADER --- */
+/* ==========================================================================
+   3. MAIN LAYOUT & HEADER
+   ========================================================================== */
 .main-content {
     margin-left: var(--sidebar-width);
     flex: 1;
     display: flex;
     flex-direction: column;
+    background-color: var(--bg-body);
 }
 
 .top-header {
     height: var(--header-height);
     background: white;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
     padding: 0 30px;
-    position: sticky;
-    top: 0;
-    z-index: 900;
+    position: sticky; top: 0; z-index: 900;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
 }
 
-/* User Menu */
-.user-menu {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.icon-btn {
-    background: none; border: none; font-size: 1.2rem;
-    color: var(--text-muted); cursor: pointer; position: relative;
-}
-.icon-btn:hover { color: var(--primary); }
+/* User Menu & Dropdown */
+.user-menu { display: flex; align-items: center; gap: 20px; }
 
 .profile-dropdown {
-    position: relative;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    position: relative; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
 }
 
 .avatar {
     width: 40px; height: 40px;
-    background: var(--primary);
-    color: white;
+    background: var(--primary); color: white;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-weight: bold;
+    font-weight: 700; font-size: 1.1rem;
+    transition: transform 0.2s;
 }
+.profile-dropdown:hover .avatar { transform: scale(1.05); }
 
-/* Dropdown Menu */
 .dropdown-content {
-    position: absolute;
-    top: 120%; right: 0;
-    width: 200px;
-    background: white;
-    border-radius: var(--radius);
-    box-shadow: var(--card-shadow);
-    padding: 10px;
-    display: none;
-    border: 1px solid #e2e8f0;
-    z-index: 2000;
+    position: absolute; top: 130%; right: 0; width: 220px;
+    background: white; border-radius: 12px;
+    box-shadow: var(--hover-shadow);
+    padding: 8px; display: none;
+    border: 1px solid var(--border); z-index: 2000;
+    animation: fadeIn 0.2s ease-out;
 }
-.dropdown-content.show { display: block; animation: fadeIn 0.2s; }
+.dropdown-content.show { display: block; }
 .dropdown-content a {
-    display: block; padding: 10px; border-radius: 8px;
+    display: block; padding: 10px 15px; border-radius: 8px;
     font-size: 0.9rem; color: var(--text-main);
 }
-.dropdown-content a:hover { background: #f8fafc; color: var(--primary); }
+.dropdown-content a:hover { background: var(--bg-body); color: var(--primary); }
 
-/* --- DASHBOARD GRID & COMPONENTS --- */
-.page-container { padding: 30px; }
+/* ==========================================================================
+   4. DASHBOARD & USERS PAGE (Locked Layout Engine)
+   ========================================================================== */
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 25px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    background: white;
-    padding: 25px;
-    border-radius: var(--radius);
-    box-shadow: var(--card-shadow);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 140px;
-    border: 1px solid white; 
-}
-
-.stat-title { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
-.stat-value { font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-top: 10px; }
-.stat-icon {
-    align-self: flex-end;
-    font-size: 1.5rem;
-    opacity: 0.2;
-}
-
-/* Table Card */
-.table-card {
-    background: white;
-    border-radius: var(--radius);
-    box-shadow: var(--card-shadow);
-    padding: 25px;
-    overflow: hidden;
-}
-
-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 0.85rem; border-bottom: 2px solid #f1f5f9; }
-td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
-tr:last-child td { border-bottom: none; }
-
-/* ======================================================
-   --- STATUS BADGES (Aggiornati: Arancio, Verde, Rosso) ---
-   ====================================================== */
-.badge {
-    padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-}
-
-/* APERTO / IN LAVORAZIONE -> ARANCIONE */
-.badge-open { 
-    background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; 
-}
-
-/* RISOLTO -> VERDE */
-.badge-resolved { 
-    background: #dcfce7; color: #15803d; border: 1px solid #86efac; 
-}
-
-/* CHIUSO -> ROSSO */
-.badge-closed { 
-    background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; 
-}
-
-@keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
-
-/* ======================================================
-   --- NUOVO STILE GRAFICO BARRE "DAILY TICKETS" ---
-   ====================================================== */
-.bar-chart {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    height: 180px;
-    padding-top: 30px;
-    gap: 10px;
-}
-
-.bar-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    height: 100%;
-    justify-content: flex-end;
-    position: relative;
-    cursor: pointer;
-}
-
-/* Barre */
-.bar {
-    width: 60%;
-    max-width: 24px;
-    background-color: #e2e8f0;
-    border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-}
-
-.bar.active {
-    background-color: var(--primary);
-    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
-}
-
-.bar-group:hover .bar { transform: scaleY(1.05); background-color: #cbd5e1; }
-.bar-group:hover .bar.active { background-color: var(--primary-dark); }
-
-/* Date */
-.bar-meta { margin-top: 12px; text-align: center; display: flex; flex-direction: column; }
-.bar-meta .day { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
-.bar-meta .month { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
-
-/* Tooltip */
-.tooltip {
-    position: absolute; top: -35px; left: 50%; transform: translateX(-50%) translateY(10px);
-    background: #1e293b; color: white; padding: 4px 8px; border-radius: 6px;
-    font-size: 0.75rem; font-weight: bold; opacity: 0; transition: all 0.2s; pointer-events: none; white-space: nowrap;
-}
-.tooltip::after {
-    content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
-    border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid #1e293b;
-}
-.bar-group:hover .tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-
-/* ======================================================
-   --- DASHBOARD PRO: AUTO-FIT + ANIMAZIONI + HOVER ---
-   ====================================================== */
-
-/* 1. ANIMAZIONI KEYFRAMES */
-@keyframes slideUpFade {
-    0% { opacity: 0; transform: translateY(40px) scale(0.95); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* 2. BLOCCO PAGINA (Layout Fisso) */
+/* Blocchiamo lo scroll principale su queste due pagine */
 html:has(body.page-dashboard),
-body.page-dashboard {
+html:has(body.page-users_stats),
+body.page-dashboard,
+body.page-users_stats {
     height: 100vh !important;
     width: 100vw !important;
     overflow: hidden !important;
     padding-bottom: 0 !important;
 }
 
-/* 3. STRUTTURA FLESSIBILE */
-body.page-dashboard .main-content {
+/* Il contenitore principale diventa flex verticale */
+body.page-dashboard .main-content,
+body.page-users_stats .main-content {
     height: 100vh !important;
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    background-color: #f8fafc;
-}
-
-/* 4. HEADER FISSO */
-body.page-dashboard .top-header {
-    flex: 0 0 auto !important;
-    z-index: 10;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-}
-
-/* 5. CONTENITORE CENTRALE (Padding & Spazi) */
-body.page-dashboard .page-container {
-    flex: 1 1 auto !important;
     overflow: hidden !important;
+}
+
+/* Header fisso */
+body.page-dashboard .top-header,
+body.page-users_stats .top-header {
+    flex: 0 0 auto !important;
+}
+
+/* Contenitore interno che gestisce lo spazio */
+body.page-dashboard .page-container,
+body.page-users_stats .page-container {
+    flex: 1 1 auto !important;
+    overflow: hidden !important; /* Lo scroll è gestito dai singoli box se necessario */
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
-    padding: 30px 40px !important; 
-    gap: 30px;
+    justify-content: space-evenly; /* Distribuisce lo spazio vert. */
+    padding: 25px 40px !important;
+    gap: 25px;
     height: 100%;
 }
 
-/* 6. GRIGLIE ELASTICHE */
-body.page-dashboard .dash-grid {
-    margin-bottom: 0 !important;
-    flex-grow: 1;
-    gap: 30px !important;
+/* Griglie e Layout Interni */
+.dash-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    flex-grow: 1; /* Occupa spazio disponibile */
+}
+.span-2 { grid-column: span 2; }
+
+/* AUTO-ZOOM per schermi bassi (Laptop) */
+@media (max-height: 950px) { 
+    body.page-dashboard .page-container, body.page-users_stats .page-container { zoom: 0.90; } 
+}
+@media (max-height: 750px) { 
+    body.page-dashboard .page-container, body.page-users_stats .page-container { zoom: 0.80; } 
 }
 
-/* 7. STILE DELLE CARD (Animazioni & Hover) */
-body.page-dashboard .dash-card {
+/* ==========================================================================
+   5. CARDS & UI COMPONENTS
+   ========================================================================== */
+
+/* Stile Card Unificato */
+.dash-card, .table-card {
     background: white;
-    border-radius: 16px;
-    border: 1px solid #f1f5f9;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    animation: slideUpFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    opacity: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--card-shadow);
     padding: 25px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    
+    /* Animazione Ingresso */
+    animation: slideUpFade 0.6s ease-out forwards;
+    opacity: 0;
 }
 
-/* 8. EFFETTO HOVER FIGO */
-body.page-dashboard .dash-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+/* Hover Effect "Dashboard Style" */
+.dash-card:hover, .table-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--hover-shadow);
     border-color: var(--primary);
 }
 
-/* --- RITARDI ANIMAZIONE (Effetto Cascata) --- */
-body.page-dashboard .dash-grid:nth-child(1) .dash-card:nth-child(1) { animation-delay: 0.1s; }
-body.page-dashboard .dash-grid:nth-child(1) .dash-card:nth-child(2) { animation-delay: 0.2s; }
-body.page-dashboard .dash-grid:nth-child(1) .dash-card:nth-child(3) { animation-delay: 0.3s; }
-body.page-dashboard .dash-grid:nth-child(2) .dash-card:nth-child(1) { animation-delay: 0.4s; }
-body.page-dashboard .dash-grid:nth-child(2) .dash-card:nth-child(2) { animation-delay: 0.5s; }
+/* Animazioni a cascata */
+.dash-grid:nth-child(1) .dash-card:nth-child(1) { animation-delay: 0.1s; }
+.dash-grid:nth-child(1) .dash-card:nth-child(2) { animation-delay: 0.2s; }
+.dash-grid:nth-child(1) .dash-card:nth-child(3) { animation-delay: 0.3s; }
+.dash-grid:nth-child(2) .dash-card:nth-child(1) { animation-delay: 0.4s; }
+.dash-grid:nth-child(2) .dash-card:nth-child(2) { animation-delay: 0.5s; }
 
-/* --- SCALING AUTOMATICO (Zoom) --- */
-@media (max-height: 950px) { body.page-dashboard .page-container { zoom: 0.90; } }
-@media (max-height: 850px) { body.page-dashboard .page-container { zoom: 0.80; } }
-@media (max-height: 750px) { body.page-dashboard .page-container { zoom: 0.75; } }
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Typography & Stats */
+h2, h3 { margin: 0 0 10px 0; color: var(--text-main); }
+p { color: var(--text-muted); line-height: 1.5; }
+
+.stat-value { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin-top: auto; }
+.stat-label { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Buttons */
+.action-btn, .icon-btn {
+    cursor: pointer; border: none; background: transparent; transition: all 0.2s;
+}
+.icon-btn { font-size: 1.1rem; color: var(--text-muted); padding: 5px; border-radius: 6px; }
+.icon-btn:hover { color: var(--primary); background: var(--bg-body); }
+
+/* Badges (Stati Ticket) */
+.badge {
+    padding: 5px 12px; border-radius: 99px;
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    display: inline-block; letter-spacing: 0.5px;
+}
+.badge-open     { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; } /* Arancio */
+.badge-resolved { background: #dcfce7; color: #15803d; border: 1px solid #86efac; } /* Verde */
+.badge-closed   { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; } /* Rosso */
+.badge-progress { background: var(--primary-light); color: var(--primary); border: 1px solid #c7d2fe; } /* Viola */
+
+/* ==========================================================================
+   6. CHARTS & TABLES
+   ========================================================================== */
+
+/* Grafico a Barre Daily Tickets */
+.bar-chart {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    height: 160px; gap: 8px; padding-top: 20px;
+}
+.bar-group {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    height: 100%; position: relative; cursor: pointer;
+}
+.bar {
+    width: 70%; max-width: 24px;
+    background: #e2e8f0; border-radius: 6px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+.bar.active { background: var(--primary); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
+.bar-group:hover .bar { transform: scaleY(1.1); background: #cbd5e1; }
+.bar-group:hover .bar.active { background: var(--primary-dark); }
+
+/* Tooltip Grafico */
+.tooltip {
+    position: absolute; top: -35px; left: 50%; transform: translateX(-50%) translateY(5px);
+    background: var(--text-main); color: white;
+    padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;
+    opacity: 0; transition: all 0.2s; pointer-events: none; white-space: nowrap;
+}
+.bar-group:hover .tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Tabelle */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 12px; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-main); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+
+/* ==========================================================================
+   7. MODALE (Popup Impostazioni)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6); /* Backdrop scuro */
+    backdrop-filter: blur(4px);
+    z-index: 2500;
+    display: none; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.show { display: flex; opacity: 1; }
+
+.modal-box {
+    background: white; width: 420px; padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center; position: relative;
+}
+.modal-overlay.show .modal-box { transform: scale(1); }
+
+.modal-close {
+    position: absolute; top: 20px; right: 20px;
+    background: none; border: none; font-size: 1.2rem; color: #94a3b8;
+    cursor: pointer; transition: 0.2s;
+}
+.modal-close:hover { color: var(--danger); transform: rotate(90deg); }
+
+.profile-avatar-large {
+    width: 100px; height: 100px;
+    background: var(--primary); color: white;
+    font-size: 2.5rem; font-weight: 800;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 25px auto;
+    border: 6px solid var(--primary-light);
+}
+
+.modal-field { text-align: left; margin-bottom: 15px; }
+.modal-field label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+.modal-field input, .modal-field select {
+    width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.95rem; color: var(--text-main); background: #f8fafc; outline: none; transition: 0.2s;
+}
+.modal-field input:focus, .modal-field select:focus {
+    border-color: var(--primary); background: white; box-shadow: 0 0 0 3px var(--primary-light);
+}
+.modal-field input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+/* Animazioni globali utili */
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+/* ======================================================
+   --- SCROLLING INTERNO (PER TABELLE E LISTE) ---
+   ====================================================== */
+
+/* 1. Wrapper per l'area che deve scorrere */
+.card-scroll-area {
+    flex: 1;                /* Occupa tutto lo spazio rimanente nella card */
+    overflow-y: auto;       /* Abilita lo scroll verticale se serve */
+    min-height: 0;          /* FIX IMPORTANTE per Flexbox annidati */
+    padding-right: 5px;     /* Spazio per non sovrapporre la scrollbar */
+    margin-top: 10px;
+}
+
+/* 2. Scrollbar personalizzata (Più elegante) */
+.card-scroll-area::-webkit-scrollbar { width: 6px; }
+.card-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.card-scroll-area::-webkit-scrollbar-thumb { 
+    background-color: #cbd5e1; 
+    border-radius: 10px; 
+    border: 2px solid white; /* Crea margine visivo */
+}
+.card-scroll-area::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+
+/* 3. Header della tabella FISSO (Sticky) */
+/* Questo fa sì che quando scorri, i titoli (Nome, Email...) restino visibili in alto */
+.card-scroll-area table thead th {
+    position: sticky;
+    top: 0;
+    background: white; /* Fondamentale: copre il testo che scorre sotto */
+    z-index: 10;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Leggera ombra sotto l'header */
+}
+
+/* 4. Fix per la Table Card generica */
+.table-card {
+    /* Assicuriamo che la card stessa usi flex verticale */
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important; /* Contiene tutto dentro i bordi arrotondati */
+    height: 100%; /* Occupa l'altezza assegnata dalla griglia */
+}

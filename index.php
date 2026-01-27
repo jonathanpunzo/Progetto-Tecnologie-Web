@@ -3,29 +3,63 @@ session_start();
 require_once('db.php');
 
 // 1. SECURITY CHECK
-if (!isset($_SESSION['user_id'])) {
-    header("Location: auth.php");
-    exit;
+if (!isset($_SESSION['user_id'])) { header("Location: auth.php"); exit; }
+
+// --- LOGICA SALVATAGGIO PROFILO (NUOVA PARTE) ---
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_profile'])) {
+    $target_id = intval($_POST['target_id']);
+    $new_name = pg_escape_string($db_conn, $_POST['name']);
+    
+    // Recuperiamo il ruolo attuale di chi sta facendo la modifica
+    $my_role = $_SESSION['user_role'];
+    $my_id = $_SESSION['user_id'];
+
+    // Query dinamica
+    $sql = "UPDATE users SET name = '$new_name'";
+
+    // SOLO L'ADMIN può cambiare i ruoli (e non può cambiare il proprio per sicurezza)
+    if ($my_role == 'admin' && isset($_POST['role']) && $target_id != $my_id) {
+        $new_role = pg_escape_string($db_conn, $_POST['role']);
+        $sql .= ", role = '$new_role'";
+    }
+
+    $sql .= " WHERE id = $target_id";
+
+    // Eseguiamo
+    if (pg_query($db_conn, $sql)) {
+        // Se ho modificato me stesso, aggiorno la sessione
+        if ($target_id == $my_id) {
+            $_SESSION['user_name'] = $new_name;
+        }
+        // Refresh per vedere le modifiche
+        header("Location: index.php?page=" . ($_GET['page'] ?? 'dashboard'));
+        exit;
+    } else {
+        echo "<script>alert('Errore nel salvataggio.');</script>";
+    }
 }
+// ------------------------------------------------
 
 $user_name = $_SESSION['user_name'];
 $user_role = $_SESSION['user_role'];
+$user_email = $_SESSION['user_email'] ?? 'email@test.com'; 
+$user_id_session = $_SESSION['user_id']; // Ci serve per il JS
+$user_initials = strtoupper(substr($user_name, 0, 1));
 
 // 2. ROUTING SYSTEM
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 
 $allowed_pages = [
-    'dashboard'      => 'pages/dashboard.php',
-    'all_tickets'    => 'pages/tickets_list.php',
-    'users_stats'    => 'pages/users_admin.php',
-    'new_ticket'     => 'pages/new_ticket.php',
-    'my_tickets'     => 'pages/tickets_list.php',
-    'community'      => 'pages/tickets_list.php',
+    'dashboard' => 'pages/dashboard.php',
+    'all_tickets' => 'pages/tickets_list.php',
+    'users_stats' => 'pages/users_admin.php',
+    'new_ticket' => 'pages/new_ticket.php',
+    'my_tickets' => 'pages/tickets_list.php',
+    'community' => 'pages/tickets_list.php',
     'closed_tickets' => 'pages/tickets_list.php',
     'ticket_details' => 'pages/ticket_details.php',
-    'chi_siamo'      => 'pages/chi_siamo.php'
+    'chi_siamo' => 'pages/chi_siamo.php'
 ];
-
 $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : 'pages/dashboard.php';
 ?>
 
@@ -43,73 +77,46 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
 <body class="page-<?php echo $page; ?>">
 
     <aside class="sidebar">
-        <div class="brand">
-            <i class="fas fa-shield-alt" style="color: #6366f1;"></i> iFantastici4
-        </div>
-
+        <div class="brand"><i class="fas fa-shield-alt" style="color: #6366f1;"></i> iFantastici4</div>
         <nav class="nav-links">
-            <a href="index.php?page=dashboard" class="nav-item <?php echo $page=='dashboard'?'active':''; ?>">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-
+            <a href="index.php?page=dashboard" class="nav-item <?php echo $page=='dashboard'?'active':''; ?>"><i class="fas fa-th-large"></i> Dashboard</a>
+            
             <?php if ($user_role == 'admin'): ?>
                 <div class="nav-separator">AMMINISTRAZIONE</div>
-                <a href="index.php?page=all_tickets" class="nav-item <?php echo $page=='all_tickets'?'active':''; ?>">
-                    <i class="fas fa-inbox"></i> Tutti i Ticket
-                </a>
-                <a href="index.php?page=closed_tickets&status=closed" class="nav-item <?php echo $page=='closed_tickets'?'active':''; ?>">
-                    <i class="fas fa-check-double"></i> Ticket Chiusi
-                </a>
-                <a href="index.php?page=users_stats" class="nav-item <?php echo $page=='users_stats'?'active':''; ?>">
-                    <i class="fas fa-users"></i> Utenti
-                </a>
+                <a href="index.php?page=all_tickets" class="nav-item <?php echo $page=='all_tickets'?'active':''; ?>"><i class="fas fa-inbox"></i> Tutti i Ticket</a>
+                <a href="index.php?page=closed_tickets&status=closed" class="nav-item <?php echo $page=='closed_tickets'?'active':''; ?>"><i class="fas fa-check-double"></i> Ticket Chiusi</a>
+                <a href="index.php?page=users_stats" class="nav-item <?php echo $page=='users_stats'?'active':''; ?>"><i class="fas fa-users"></i> Utenti</a>
             <?php else: ?>
                 <div class="nav-separator">MENU UTENTE</div>
-                <a href="index.php?page=new_ticket" class="nav-item <?php echo $page=='new_ticket'?'active':''; ?>">
-                    <i class="fas fa-plus-circle"></i> Crea Ticket
-                </a>
-                <a href="index.php?page=my_tickets" class="nav-item <?php echo $page=='my_tickets'?'active':''; ?>">
-                    <i class="fas fa-list"></i> I Miei Ticket
-                </a>
-                <a href="index.php?page=community" class="nav-item <?php echo $page=='community'?'active':''; ?>">
-                    <i class="fas fa-globe"></i> Community Ticket
-                </a>
-                <a href="index.php?page=closed_tickets&status=closed" class="nav-item <?php echo $page=='closed_tickets'?'active':''; ?>">
-                    <i class="fas fa-archive"></i> Ticket Chiusi
-                </a>
+                <a href="index.php?page=new_ticket" class="nav-item <?php echo $page=='new_ticket'?'active':''; ?>"><i class="fas fa-plus-circle"></i> Crea Ticket</a>
+                <a href="index.php?page=my_tickets" class="nav-item <?php echo $page=='my_tickets'?'active':''; ?>"><i class="fas fa-list"></i> I Miei Ticket</a>
+                <a href="index.php?page=community" class="nav-item <?php echo $page=='community'?'active':''; ?>"><i class="fas fa-globe"></i> Community Ticket</a>
+                <a href="index.php?page=closed_tickets&status=closed" class="nav-item <?php echo $page=='closed_tickets'?'active':''; ?>"><i class="fas fa-archive"></i> Ticket Chiusi</a>
             <?php endif; ?>
 
             <div class="nav-separator">INFO</div>
-            <a href="index.php?page=chi_siamo" class="nav-item <?php echo $page=='chi_siamo'?'active':''; ?>">
-                <i class="fas fa-info-circle"></i> Chi Siamo
-            </a>
+            <a href="index.php?page=chi_siamo" class="nav-item <?php echo $page=='chi_siamo'?'active':''; ?>"><i class="fas fa-info-circle"></i> Chi Siamo</a>
         </nav>
-
         <div class="sidebar-footer">
-            <a href="logout.php" class="nav-item" style="color: #ef4444;">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
+            <a href="logout.php" class="nav-item" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </aside>
 
     <div class="main-content">
-        
         <header class="top-header">
             <div class="welcome-text">
                 <h3>Ciao, <?php echo htmlspecialchars($user_name); ?>! 👋</h3>
                 <small style="color:var(--text-muted)">Ruolo: <?php echo ucfirst($user_role); ?></small>
             </div>
-
-            <div></div> <div class="user-menu">
+            <div></div>
+            <div class="user-menu">
                 <div class="profile-dropdown" onclick="toggleMenu()">
-                    <div class="avatar">
-                        <?php echo strtoupper(substr($user_name, 0, 1)); ?>
-                    </div>
+                    <div class="avatar"><?php echo $user_initials; ?></div>
                     <div id="dropdownInfo" class="dropdown-content">
                         <div style="padding: 10px; border-bottom: 1px solid #eee;">
                             <strong><?php echo htmlspecialchars($user_name); ?></strong>
                         </div>
-                        <a href="#">Impostazioni</a>
+                        <a href="#" onclick="openUserModal('me')">Impostazioni</a>
                         <a href="logout.php" style="color:red;">Esci</a>
                     </div>
                 </div>
@@ -118,30 +125,117 @@ $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : '
 
         <div class="page-container">
             <?php 
-                if (file_exists($page_file)) {
-                    include($page_file); 
-                } else {
-                    echo "<h2>Errore 404</h2><p>Pagina non trovata.</p>";
-                }
+                if (file_exists($page_file)) include($page_file); 
+                else echo "<h2>Errore 404</h2><p>Pagina non trovata.</p>";
             ?>
         </div>
+    </div>
 
+    <div id="userModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeUserModal()"><i class="fas fa-times"></i></button>
+            
+            <div class="profile-avatar-large" id="modalAvatar">A</div>
+            <h3 id="modalTitle" style="margin-bottom: 20px;">Modifica Profilo</h3>
+            
+            <form method="POST" action="">
+                <input type="hidden" name="save_profile" value="1">
+                <input type="hidden" name="target_id" id="modalTargetId">
+
+                <div class="modal-field">
+                    <label>Nome Completo</label>
+                    <input type="text" name="name" id="modalName" required>
+                </div>
+                
+                <div class="modal-field">
+                    <label>Email (Non modificabile)</label>
+                    <input type="email" id="modalEmail" readonly style="opacity:0.7; cursor:not-allowed;">
+                </div>
+                
+                <div class="modal-field">
+                    <label>Ruolo</label>
+                    <select name="role" id="modalRole" disabled>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="action-btn" style="background:var(--primary); color:white; border:none; margin-top:20px; width:100%;">
+                    Salva Modifiche
+                </button>
+            </form>
+
+        </div>
     </div>
 
     <script>
+        // Dati sessione corrente
+        const currentUser = {
+            id: <?php echo $user_id_session; ?>,
+            name: "<?php echo htmlspecialchars($user_name); ?>",
+            email: "<?php echo htmlspecialchars($user_email); ?>", 
+            role: "<?php echo $user_role; ?>",
+            initials: "<?php echo $user_initials; ?>"
+        };
+
         function toggleMenu() {
             document.getElementById("dropdownInfo").classList.toggle("show");
         }
 
-        // Chiudi dropdown se clicco fuori
+        function openUserModal(data) {
+            const modal = document.getElementById('userModal');
+            let user = {};
+
+            // 1. Capire chi stiamo modificando
+            if (data === 'me') {
+                user = currentUser;
+                document.getElementById('modalTitle').innerText = "Il Tuo Profilo";
+            } else {
+                user = data; // Dati passati dalla lista admin
+                document.getElementById('modalTitle').innerText = "Modifica Utente";
+            }
+
+            // 2. Popolare i campi
+            document.getElementById('modalTargetId').value = user.id;
+            document.getElementById('modalName').value = user.name;
+            document.getElementById('modalEmail').value = user.email;
+            document.getElementById('modalRole').value = user.role;
+            document.getElementById('modalAvatar').innerText = user.initials;
+
+            // 3. Logica Permessi (Chi può modificare cosa?)
+            const roleSelect = document.getElementById('modalRole');
+            
+            // Regola: Solo ADMIN può cambiare ruoli, e NON il proprio ruolo
+            if (currentUser.role === 'admin' && user.id != currentUser.id) {
+                roleSelect.disabled = false; // Abilita modifica ruolo
+                roleSelect.style.cursor = 'pointer';
+                roleSelect.style.opacity = '1';
+            } else {
+                roleSelect.disabled = true; // Disabilita
+                roleSelect.style.cursor = 'not-allowed';
+                roleSelect.style.opacity = '0.7';
+            }
+
+            // Mostra modale
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.classList.add('show'); }, 10);
+            
+            document.getElementById("dropdownInfo").classList.remove("show");
+        }
+
+        function closeUserModal() {
+            const modal = document.getElementById('userModal');
+            modal.classList.remove('show');
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+
         window.onclick = function(event) {
+            const modal = document.getElementById('userModal');
+            if (event.target == modal) closeUserModal();
             if (!event.target.closest('.profile-dropdown')) {
                 var dropdowns = document.getElementsByClassName("dropdown-content");
                 for (var i = 0; i < dropdowns.length; i++) {
-                    var openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                    }
+                    if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
                 }
             }
         }
