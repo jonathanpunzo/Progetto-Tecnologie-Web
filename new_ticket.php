@@ -85,6 +85,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
         input[type="text"], select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; }
+        nav {
+            background-color: var(--sidebar-dark);
+            padding: 0.8rem 2rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
