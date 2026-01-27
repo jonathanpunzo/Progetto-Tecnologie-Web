@@ -1,3 +1,5 @@
+-- FILE: db_creation.sql
+
 -- Pulizia Completa
 DROP TABLE IF EXISTS messages CASCADE;
 DROP TABLE IF EXISTS tickets CASCADE;
@@ -126,5 +128,6 @@ INSERT INTO tickets (user_id, title, description, priority, category, status, cr
 INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
 (5, 'Richiesta secondo monitor', 'Per gestire meglio il backend avrei bisogno di uno schermo aggiuntivo.', 'low', 'Hardware', 'closed', NOW() - INTERVAL '10 days');
 
-INSERT INTO messages (ticket_id, user_id, message) VALUES
+-- CORREZIONE: Aggiunto 'created_at' nella lista colonne
+INSERT INTO messages (ticket_id, user_id, message, created_at) VALUES
 ((SELECT id FROM tickets WHERE title = 'Richiesta secondo monitor'), 1, 'Approvato. Passa in magazzino a ritirarlo.', NOW() - INTERVAL '9 days');
