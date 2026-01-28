@@ -36,7 +36,8 @@ CREATE TABLE tickets (
     status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'closed')),
     category VARCHAR(50),
     attachment_path VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_public BOOLEAN DEFAULT FALSE
 );
 ALTER TABLE tickets OWNER TO www;
 
