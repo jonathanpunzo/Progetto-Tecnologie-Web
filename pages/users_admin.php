@@ -1,10 +1,13 @@
 <?php
-session_start();
+// Se la costante non è definita, significa che l'utente sta accedendo al file direttamente
+if (!defined('ACCESSO_AUTORIZZATO')) {
+    header("Location: landing.php");
+    exit;
+}
 
-// Se l'utente non è loggato, reindirizza al login
+// Ora puoi procedere con il controllo della sessione (che è già attiva da index.php)
 if (!isset($_SESSION['user_id'])) {
-    // Usa ../ perché auth.php è nella cartella superiore (root)
-    header("Location: ../auth.php");
+    header("Location: index.php");
     exit;
 }
 ?>

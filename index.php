@@ -1,8 +1,11 @@
 <?php
 // FILE: index.php
 session_start();
-require_once('db.php');
 
+// Questa riga è fondamentale per far funzionare le "pages"
+define('ACCESSO_AUTORIZZATO', true); 
+
+require_once('db.php');
 
 // 1. SECURITY CHECK & ROUTING
 // Se l'utente NON è loggato, includiamo la Landing Page e fermiamo lo script.

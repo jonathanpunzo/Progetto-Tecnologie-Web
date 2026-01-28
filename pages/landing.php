@@ -1,11 +1,18 @@
 <?php
-// FILE: landing.php
-// Versione Finale: Header, FAQ DB + Team Popup Animato
+// FILE: pages/landing.php
 
-// Recupero le FAQ dal database
+// Protezione accesso diretto
+if (!defined('ACCESSO_AUTORIZZATO')) {
+    header("Location: ../index.php");
+    exit;
+}
+
+global $db_conn; // Forza PHP a cercare la connessione definita in db.php
+
 $query_faq = "SELECT * FROM faqs ORDER BY id ASC";
-$res_faq = @pg_query($db_conn, $query_faq);
+$res_faq = @pg_query($db_conn, $query_faq); // Ora $db_conn non sarà più null
 ?>
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
