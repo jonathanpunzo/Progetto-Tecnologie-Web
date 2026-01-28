@@ -1,7 +1,7 @@
 \set ON_ERROR_STOP on
 
 -- ==========================================================
--- 00_create_role_and_db_ifantastici4.psql (VERSIONE SICURA)
+-- create_role_and_db_ifantastici4.psql
 -- ==========================================================
 
 \set db_name   'gruppo_ifantastici4'
@@ -25,4 +25,4 @@ WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = :'db_name')
 GRANT ALL PRIVILEGES ON DATABASE :"db_name" TO "www";
 
 \echo
-\echo '✅ Database pronto: ' :db_name ' (owner=www)'
+\echo 'Database pronto: ' :db_name ' (owner=www) !!'
