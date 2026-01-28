@@ -3,8 +3,12 @@
 session_start();
 require_once('db.php');
 
-// 1. SECURITY CHECK
-if (!isset($_SESSION['user_id'])) { header("Location: auth.php"); exit; }
+// 1. SECURITY CHECK & ROUTING
+// Se l'utente NON è loggato, includiamo la Landing Page e fermiamo lo script.
+if (!isset($_SESSION['user_id'])) { 
+    include('pages/landing.php'); 
+    exit; 
+}
 
 // --- LOGICA SALVATAGGIO PROFILO ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_profile'])) {
@@ -57,7 +61,8 @@ $allowed_pages = [
     'community' => 'pages/tickets_list.php',
     'closed_tickets' => 'pages/tickets_list.php',
     'ticket_details' => 'pages/ticket_details.php',
-    'chi_siamo' => 'pages/chi_siamo.php'
+    'chi_siamo' => 'pages/chi_siamo.php',
+    'landing' => 'pages/landing.php'
 ];
 $page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : 'pages/dashboard.php';
 ?>
