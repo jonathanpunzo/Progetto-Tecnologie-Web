@@ -1,315 +1,252 @@
 <?php
-    session_start();
-    require_once('db.php');
+// FILE: index.php
+session_start();
+require_once('db.php');
 
-    // Verifichiamo se l'utente è loggato
-    $is_logged = isset($_SESSION['user_id']);
-    $user_name = $is_logged ? $_SESSION['user_name'] : 'Ospite';
-    $role = $is_logged ? $_SESSION['user_role'] : '';
+// 1. SECURITY CHECK
+if (!isset($_SESSION['user_id'])) { header("Location: auth.php"); exit; }
+
+// --- LOGICA SALVATAGGIO PROFILO ---
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_profile'])) {
+    $target_id = intval($_POST['target_id']);
+    $new_name = pg_escape_string($db_conn, $_POST['name']);
+    
+    $my_role = $_SESSION['user_role'];
+    $my_id = $_SESSION['user_id'];
+
+    $sql = "UPDATE users SET name = '$new_name'";
+
+    if ($my_role == 'admin' && isset($_POST['role']) && $target_id != $my_id) {
+        $new_role = pg_escape_string($db_conn, $_POST['role']);
+        $sql .= ", role = '$new_role'";
+    }
+
+    $sql .= " WHERE id = $target_id";
+
+    if (pg_query($db_conn, $sql)) {
+        if ($target_id == $my_id) $_SESSION['user_name'] = $new_name;
+        $redirect_page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
+        header("Location: index.php?page=" . $redirect_page);
+        exit;
+    } else {
+        echo "<script>alert('Errore nel salvataggio.');</script>";
+    }
+}
+
+// DATI UTENTE CORRENTE
+$user_id_session = $_SESSION['user_id'];
+$user_name = $_SESSION['user_name'];
+$user_role = $_SESSION['user_role'];
+$user_initials = strtoupper(substr($user_name, 0, 1));
+
+// --- MODIFICA QUI: RECUPERO EMAIL REALE DAL DB ---
+$query_me = "SELECT email FROM users WHERE id = $user_id_session";
+$res_me = pg_query($db_conn, $query_me);
+// Se trova l'utente usa la sua email, altrimenti stringa vuota
+$user_email = ($res_me && pg_num_rows($res_me) > 0) ? pg_fetch_result($res_me, 0, 0) : 'Errore Email';
+
+
+// ROUTING
+$page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
+$allowed_pages = [
+    'dashboard' => 'pages/dashboard.php',
+    'all_tickets' => 'pages/tickets_list.php',
+    'users_stats' => 'pages/users_admin.php',
+    'new_ticket' => 'pages/new_ticket.php',
+    'my_tickets' => 'pages/tickets_list.php',
+    'community' => 'pages/tickets_list.php',
+    'closed_tickets' => 'pages/tickets_list.php',
+    'ticket_details' => 'pages/ticket_details.php',
+    'chi_siamo' => 'pages/chi_siamo.php'
+];
+$page_file = array_key_exists($page, $allowed_pages) ? $allowed_pages[$page] : 'pages/dashboard.php';
 ?>
 
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <link rel="icon" type="image/png" href="icon/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - HelpDesk</title>
-    
+    <title>Dashboard - HelpDesk iFantastici4</title>
+    <link rel="icon" type="image/png" href="icon/favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        /* --- STILI SPECIFICI PER LA HOME --- */
-
-        /* 1. NAVBAR MIGLIORATA */
-        nav {
-            background-color: var(--sidebar-dark);
-            padding: 0.8rem 2rem; /* Padding ridotto per il logo */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        /* Logo Composito */
-        .brand-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: white;
-            text-decoration: none;
-        }
-        
-        /* Menu Utente */
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            font-size: 0.95rem;
-        }
-        .user-badge {
-            background: rgba(255,255,255,0.1);
-            padding: 5px 12px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        /* 2. HERO SECTION */
-        .hero-section {
-            background: linear-gradient(180deg, rgba(37,99,235,0.03) 0%, rgba(37,99,235,0.08) 100%);
-            padding: 80px 40px;
-            border-radius: var(--radius);
-            margin-bottom: 40px;
-            text-align: center;
-            border: 1px solid rgba(37, 99, 235, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-title { 
-            font-size: 3rem; 
-            font-weight: 800; 
-            margin-bottom: 20px; 
-            letter-spacing: -1.5px;
-            color: var(--sidebar-dark);
-        }
-
-        .hero-text { 
-            font-size: 1.15rem; 
-            line-height: 1.7;
-            max-width: 650px; 
-            margin: 0 auto 35px auto; 
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-        
-        .btn-hero {
-            background: var(--primary); 
-            color: white; 
-            padding: 15px 40px; 
-            font-size: 1.1rem;
-            border-radius: 50px; 
-            font-weight: 700; 
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-        .btn-hero:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.35); 
-            text-decoration: none; 
-            color: rgb(45, 89, 177);
-            background-color: var(--primary-hover);
-        }
-
-        /* 3. FAQ GRID */
-        .faq-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        .faq-card {
-            background: white;
-            padding: 25px;
-            border-radius: var(--radius);
-            border: 1px solid #e2e8f0;
-            box-shadow: var(--shadow-sm);
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .faq-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .faq-question { font-weight: 700; color: var(--sidebar-dark); margin-bottom: 10px; display: flex; gap: 10px; }
-        .faq-answer { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
-
-        /* 4. DASHBOARD HEADER */
-        .dash-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #f1f5f9;
-        }
-        .welcome-text h1 { margin: 0; font-size: 1.8rem; }
-        .welcome-text p { margin: 5px 0 0 0; color: var(--text-muted); }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            nav { flex-direction: column; gap: 15px; text-align: center; }
-            .dash-header { flex-direction: column; gap: 15px; text-align: center; align-items: stretch; }
-            .brand-container { justify-content: center; }
-            .hero-title { font-size: 1.8rem; }
-        }
-    </style>
 </head>
-<body>
 
-    <nav>
-        <a href="index.php" class="brand-container">
-            <img src="icon/logobanner.png" alt="HelpDesk Logo" class="brand-logo-img">
-        </a>
+<body class="page-<?php echo $page; ?>">
 
-        <div class="user-menu">
-            <?php if ($is_logged): ?>
-                <div class="desktop-only user-badge">
-                    <i class="far fa-user"></i> <strong><?php echo htmlspecialchars($user_name); ?></strong> 
-                    <span style="opacity:0.7; font-size:0.85em;">(<?php echo ucfirst($role); ?>)</span>
-                </div>
-                <a href="logout.php" class="btn-style" style="background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
-                    <i class="fas fa-sign-out-alt"></i> Esci
-                </a>
+    <aside class="sidebar">
+        <div class="brand"><img src="icon/logo.png" style="height:40px;"> iFantastici4</div>
+        <nav class="nav-links">
+            <a href="index.php?page=dashboard" class="nav-item <?php echo $page=='dashboard'?'active':''; ?>"><i class="fas fa-th-large"></i> Dashboard</a>
+            
+            <?php if ($user_role == 'admin'): ?>
+                <div class="nav-separator">AMMINISTRAZIONE</div>
+                <a href="index.php?page=all_tickets" class="nav-item <?php echo $page=='all_tickets'?'active':''; ?>"><i class="fas fa-inbox"></i> Tutti i Ticket</a>
+                <a href="index.php?page=closed_tickets&status=closed" class="nav-item <?php echo $page=='closed_tickets'?'active':''; ?>"><i class="fas fa-check-double"></i> Ticket Chiusi</a>
+                <a href="index.php?page=users_stats" class="nav-item <?php echo $page=='users_stats'?'active':''; ?>"><i class="fas fa-users"></i> Utenti</a>
             <?php else: ?>
-                <a href="auth.php" class="btn-style"><i class="fas fa-sign-in-alt"></i> Accedi</a>
+                <div class="nav-separator">MENU UTENTE</div>
+                <a href="index.php?page=new_ticket" class="nav-item <?php echo $page=='new_ticket'?'active':''; ?>"><i class="fas fa-plus-circle"></i> Crea Ticket</a>
+                <a href="index.php?page=my_tickets" class="nav-item <?php echo $page=='my_tickets'?'active':''; ?>"><i class="fas fa-list"></i> I Miei Ticket</a>
+                <a href="index.php?page=community" class="nav-item <?php echo $page=='community'?'active':''; ?>"><i class="fas fa-globe"></i> Community Ticket</a>
+                <a href="index.php?page=closed_tickets&status=closed" class="nav-item <?php echo $page=='closed_tickets'?'active':''; ?>"><i class="fas fa-archive"></i> Ticket Chiusi</a>
             <?php endif; ?>
+
+            <div class="nav-separator">INFO</div>
+            <a href="index.php?page=chi_siamo" class="nav-item <?php echo $page=='chi_siamo'?'active':''; ?>"><i class="fas fa-info-circle"></i> Chi Siamo</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="logout.php" class="nav-item" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
-    </nav>
+    </aside>
 
-    <div class="container" style="border:none; box-shadow:none; background:transparent; padding:0; margin-top: 30px;">
+    <div class="main-content">
         
-        <?php if ($is_logged): ?>
+        <header class="top-header">
+            <div class="welcome-text">
+                <h3>Ciao, <?php echo htmlspecialchars($user_name); ?>! 👋</h3>
+            </div>
+            
+            <div></div>
+            
+            <div class="user-menu">
+                <div class="profile-dropdown" onclick="toggleMenu()">
+                    <div class="avatar"><?php echo $user_initials; ?></div>
+                    
+                    <div id="dropdownInfo" class="dropdown-content">
+                        
+                        <div class="dropdown-header">
+                            <span class="dropdown-user-name"><?php echo htmlspecialchars($user_name); ?></span>
+                            <span class="dropdown-user-role"><?php echo $user_role; ?></span>
+                        </div>
+                        
+                        <div class="dropdown-body">
+                            <a href="#" onclick="openUserModal('me')" class="dropdown-link">
+                                <i class="fas fa-cog"></i> Impostazioni
+                            </a>
+                            <a href="logout.php" class="dropdown-link logout">
+                                <i class="fas fa-sign-out-alt"></i> Esci
+                            </a>
+                        </div>
 
-            <div style="background: white; padding: 30px; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e2e8f0;">
-                
-                <div class="dash-header">
-                    <div class="welcome-text">
-                        <h1><i class="fas fa-columns"></i> Dashboard</h1>
-                        <p>Gestisci le tue segnalazioni in modo semplice e veloce.</p>
                     </div>
-                    <?php if ($role != 'admin'): ?>
-                        <a href="new_ticket.php" class="btn-new">
-                            <i class="fas fa-plus-circle"></i> Nuovo Ticket
-                        </a>
-                    <?php endif; ?>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <?php 
+                if (file_exists($page_file)) include($page_file); 
+                else echo "<h2>Errore 404</h2><p>Pagina non trovata.</p>";
+            ?>
+        </div>
+    </div>
+
+    <div id="userModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeUserModal()"><i class="fas fa-times"></i></button>
+            
+            <div class="profile-avatar-large" id="modalAvatar">A</div>
+            <h3 id="modalTitle" style="margin-bottom: 20px;">Modifica Profilo</h3>
+            
+            <form method="POST" action="">
+                <input type="hidden" name="save_profile" value="1">
+                <input type="hidden" name="target_id" id="modalTargetId">
+
+                <div class="modal-field">
+                    <label>Nome Completo</label>
+                    <input type="text" name="name" id="modalName" required>
+                </div>
+                
+                <div class="modal-field">
+                    <label>Email (Non modificabile)</label>
+                    <input type="email" id="modalEmail" readonly style="opacity:0.7; cursor:not-allowed;">
+                </div>
+                
+                <div class="modal-field">
+                    <label>Ruolo</label>
+                    <select name="role" id="modalRole" disabled>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
                 </div>
 
-                <?php
-                    if ($role == 'admin') {
-                        // Modifica qui: ORDER BY t.id DESC
-                        $query = "SELECT t.*, u.name as author_name FROM tickets t JOIN users u ON t.user_id = u.id ORDER BY t.id DESC";
-                    } else {
-                        $user_id = $_SESSION['user_id'];
-                        // Modifica qui: ORDER BY id DESC
-                        $query = "SELECT * FROM tickets WHERE user_id = $user_id ORDER BY id DESC";
-                    }
-                    $result = pg_query($db_conn, $query);
-                ?>
+                <div style="margin-top:25px; display:flex; gap:15px;">
+                    <button type="button" onclick="closeUserModal()" class="action-btn btn-secondary" style="flex:1;">
+                        Annulla
+                    </button>
+                    <button type="submit" class="action-btn btn-primary" style="flex:1.5;">
+                        Salva Modifiche
+                    </button>
+                </div>
+            </form>
 
-                <?php if ($result && pg_num_rows($result) > 0): ?>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <?php if($role == 'admin') echo "<th>Utente</th>"; ?>
-                                    <th>Oggetto</th>
-                                    <th>Stato</th>
-                                    <th>Priorità</th>
-                                    <th>Data</th>
-                                    <th>Azioni</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php while ($row = pg_fetch_assoc($result)): ?>
-                                <tr>
-                                    <td><strong>#<?php echo $row['id']; ?></strong></td>
-                                    <?php if($role == 'admin') echo "<td>" . htmlspecialchars($row['author_name']) . "</td>"; ?>
-                                    <td><?php echo htmlspecialchars($row['title']); ?></td>
-                                    
-                                    <td class="status-<?php echo $row['status']; ?>">
-                                        <?php 
-                                            $icon = "";
-                                            if($row['status']=='open') $icon = "<i class='fas fa-circle-notch'></i>";
-                                            if($row['status']=='in-progress') $icon = "<i class='fas fa-wrench'></i>";
-                                            if($row['status']=='resolved') $icon = "<i class='fas fa-check'></i>";
-                                            if($row['status']=='closed') $icon = "<i class='fas fa-lock'></i>";
-                                            echo "$icon " . strtoupper($row['status']); 
-                                        ?>
-                                    </td>
-                                    
-                                    <td>
-                                        <?php 
-                                            $prio = $row['priority'];
-                                            $color = ($prio=='urgent' || $prio=='high') ? 'red' : 'inherit';
-                                            echo "<span style='color:$color'>" . ucfirst($prio) . "</span>";
-                                        ?>
-                                    </td>
-                                    <td><?php echo date('d/m/Y', strtotime($row['created_at'])); ?></td>
-                                    <td>
-                                        <a href="ticket_details.php?id=<?php echo $row['id']; ?>" style="font-weight:bold;">
-                                            Gestisci &rarr;
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php else: ?>
-                    <div style="text-align: center; padding: 50px; color: var(--text-muted);">
-                        <i class="far fa-folder-open" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <h3>Nessun ticket presente</h3>
-                        <p>Non ci sono segnalazioni da mostrare al momento.</p>
-                        <?php if($role != 'admin'): ?>
-                            <a href="new_ticket.php" style="color: var(--primary); font-weight: bold;">Aprine uno ora</a>
-                        <?php endif; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
+        </div>
+    </div>
 
-        <?php else: ?>
-            
-            <div class="hero-section">
-                <h1 class="hero-title">HAI BISOGNO DI <strong>ASSISTENZA</strong>?</h1>
-                <p class="hero-text">Benvenuto nel portale di supporto iFantastici4. <br>Apri un ticket, monitora lo stato della tua richiesta e ricevi supporto!</p>
-                <a href="auth.php" class="btn-hero"><i class="fas fa-rocket"></i> Inizia Subito</a>
-            </div>
-            
-            <h2 style="text-align: center; color: var(--sidebar-dark); margin-bottom: 10px;">Domande Frequenti</h2>
-            <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Trova risposte immediate prima di aprire un ticket</p>
+    <script>
+        // QUI USIAMO LA VARIABILE PHP $user_email AGGIORNATA
+        const currentUser = {
+            id: <?php echo $user_id_session; ?>,
+            name: "<?php echo htmlspecialchars($user_name); ?>",
+            email: "<?php echo htmlspecialchars($user_email); ?>", 
+            role: "<?php echo $user_role; ?>",
+            initials: "<?php echo $user_initials; ?>"
+        };
 
-            <div class="faq-grid">
-                <?php
-                $faq_query = "SELECT * FROM faqs";
-                $faq_res = pg_query($db_conn, $faq_query);
-                
-                if($faq_res):
-                    while ($faq = pg_fetch_assoc($faq_res)): 
-                ?>
-                    <div class="faq-card">
-                        <div class="faq-question">
-                            <i class="far fa-question-circle" style="color: var(--primary); margin-top: 2px;"></i>
-                            <?php echo htmlspecialchars($faq['question']); ?>
-                        </div>
-                        <div class="faq-answer">
-                            <?php echo htmlspecialchars($faq['answer']); ?>
-                        </div>
-                    </div>
-                <?php 
-                    endwhile; 
-                endif;
-                ?>
-            </div>
+        function toggleMenu() { document.getElementById("dropdownInfo").classList.toggle("show"); }
 
-            <div style="margin-top: 50px; text-align: center; padding-bottom: 40px;">
-                <p style="color: var(--text-muted);">Non hai trovato la risposta che cercavi?</p>
-                <a href="auth.php" style="font-weight: bold;">Contatta il supporto &rarr;</a>
-            </div>
+        function openUserModal(data) {
+            const modal = document.getElementById('userModal');
+            let user = {};
 
-        <?php endif; ?>
+            if (data === 'me') {
+                user = currentUser;
+                document.getElementById('modalTitle').innerText = "Il Tuo Profilo";
+            } else {
+                user = data;
+                document.getElementById('modalTitle').innerText = "Modifica Utente";
+            }
 
-    </div> 
+            document.getElementById('modalTargetId').value = user.id;
+            document.getElementById('modalName').value = user.name;
+            document.getElementById('modalEmail').value = user.email;
+            document.getElementById('modalRole').value = user.role;
+            document.getElementById('modalAvatar').innerText = user.initials;
 
-    <footer class="main-footer">
-        <p>
-            Made with <span class="heart-beat">❤️</span> da: 
-            <strong>I Fantastici 4</strong> 
-        </p>
-        <p style="opacity: 0.8; font-size: 0.85em;">Esame di Tecnologie Web 2025/2026</p>
-        
-        <a href="chi_siamo.php" class="btn-style" style="margin-top: 10px; background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3);">
-            Chi Siamo
-        </a>
-    </footer>
+            const roleSelect = document.getElementById('modalRole');
+            if (currentUser.role === 'admin' && user.id != currentUser.id) {
+                roleSelect.disabled = false;
+                roleSelect.style.cursor = 'pointer';
+                roleSelect.style.opacity = '1';
+            } else {
+                roleSelect.disabled = true;
+                roleSelect.style.cursor = 'not-allowed';
+                roleSelect.style.opacity = '0.7';
+            }
 
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.classList.add('show'); }, 10);
+            document.getElementById("dropdownInfo").classList.remove("show");
+        }
+
+        function closeUserModal() {
+            const modal = document.getElementById('userModal');
+            modal.classList.remove('show');
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('userModal');
+            if (event.target == modal) closeUserModal();
+            if (!event.target.closest('.profile-dropdown')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
+                }
+            }
+        }
+    </script>
 </body>
 </html>
