@@ -1,5 +1,12 @@
 <?php
-// FILE: pages/chi_siamo.php
+session_start();
+
+// Se l'utente non è loggato, reindirizza al login
+if (!isset($_SESSION['user_id'])) {
+    
+    header("Location: ../auth.php");
+    exit;
+}
 ?>
 
 <style>
