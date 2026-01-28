@@ -1,0 +1,5 @@
+# 1. Impedisce la visualizzazione dell'elenco dei file
+Options -Indexes
+
+# 2. Reindirizza chiunque acceda alla cartella direttamente alla landing/home
+RedirectMatch 301 ^/Progetto-Tecnologie-Web/pages/?$ /Progetto-Tecnologie-Web/index.php
