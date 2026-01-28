@@ -3,11 +3,33 @@
 session_start();
 require_once('db.php');
 
+
 // 1. SECURITY CHECK & ROUTING
 // Se l'utente NON è loggato, includiamo la Landing Page e fermiamo lo script.
 if (!isset($_SESSION['user_id'])) { 
     include('pages/landing.php'); 
     exit; 
+}
+
+// 2. GESTIONE DOWNLOAD ALLEGATI (Senza file separato)
+if (isset($_GET['page']) && $_GET['page'] == 'view_attachment' && isset($_GET['id'])) {
+    $att_id = intval($_GET['id']);
+    $query = "SELECT file_name, file_type, file_data FROM ticket_attachments WHERE id = $att_id";
+    $result = pg_query($db_conn, $query);
+
+    if ($result && pg_num_rows($result) > 0) {
+        $file = pg_fetch_assoc($result);
+        $data = pg_unescape_bytea($file['file_data']);
+        
+        // Header per il download
+        header("Content-Type: " . $file['file_type']);
+        header("Content-Disposition: inline; filename=\"" . $file['file_name'] . "\"");
+        header("Content-Length: " . strlen($data));
+        echo $data;
+        exit; // IMPORTANTE: Ferma lo script qui
+    } else {
+        die("File non trovato.");
+    }
 }
 
 // --- LOGICA SALVATAGGIO PROFILO ---

@@ -4,7 +4,7 @@
 $msg = "";
 $msg_type = "";
 
-// LOGICA PHP (Invariata)
+// LOGICA PHP
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
     $title = pg_escape_string($db_conn, $_POST['title']);
     $desc = pg_escape_string($db_conn, $_POST['description']);
@@ -12,53 +12,69 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
     $priority = $_POST['priority'];
     $user_id = $_SESSION['user_id'];
     
-    $saved_paths = [];
-    $upload_error = false;
+    // 1. PRIMA CREIAMO IL TICKET (Per avere l'ID)
+    $query_ticket = "INSERT INTO tickets (user_id, title, description, priority, category) 
+                     VALUES ($user_id, '$title', '$desc', '$priority', '$category') RETURNING id";
+    $result_ticket = pg_query($db_conn, $query_ticket);
 
-    if (isset($_FILES['attachments']) && count($_FILES['attachments']['name']) > 0) {
-        $allowed_ext = ['jpg', 'jpeg', 'png', 'pdf'];
-        $max_size = 4 * 1024 * 1024; // 4MB
-        
-        $count = count($_FILES['attachments']['name']);
-        for ($i = 0; $i < $count; $i++) {
-            $name = $_FILES['attachments']['name'][$i];
-            $tmp_name = $_FILES['attachments']['tmp_name'][$i];
-            $size = $_FILES['attachments']['size'][$i];
-            $error = $_FILES['attachments']['error'][$i];
+    if ($result_ticket) {
+        $ticket_row = pg_fetch_assoc($result_ticket);
+        $ticket_id = $ticket_row['id'];
+        $upload_error = false;
 
-            if ($error == UPLOAD_ERR_NO_FILE) continue;
+        // 2. GESTIONE FILE (Salvataggio nel DB)
+        if (isset($_FILES['attachments']) && count($_FILES['attachments']['name']) > 0) {
+            $allowed_ext = ['jpg', 'jpeg', 'png', 'pdf'];
+            $max_size = 4 * 1024 * 1024; // 4MB
+            
+            $count = count($_FILES['attachments']['name']);
+            for ($i = 0; $i < $count; $i++) {
+                $name = $_FILES['attachments']['name'][$i];
+                $tmp_name = $_FILES['attachments']['tmp_name'][$i];
+                $size = $_FILES['attachments']['size'][$i];
+                $error = $_FILES['attachments']['error'][$i];
+                $type = $_FILES['attachments']['type'][$i]; // Tipo MIME
 
-            if ($error == 0) {
-                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                if (!in_array($ext, $allowed_ext)) {
-                    $msg = "❌ File '$name' non supportato."; $msg_type = "error"; $upload_error = true; break;
-                }
-                if ($size > $max_size) {
-                    $msg = "❌ File '$name' troppo grande."; $msg_type = "error"; $upload_error = true; break;
-                }
-                $clean_name = time() . "_" . $i . "_" . preg_replace("/[^a-zA-Z0-9\._-]/", "", $name);
-                $target = "uploads/" . $clean_name;
-                if (!is_dir('uploads')) mkdir('uploads');
-                if (move_uploaded_file($tmp_name, $target)) {
-                    $saved_paths[] = $target;
-                } else {
-                    $msg = "❌ Errore upload '$name'."; $msg_type = "error"; $upload_error = true; break;
+                // Se non c'è file caricato, salta
+                if ($error == UPLOAD_ERR_NO_FILE) continue;
+
+                if ($error == 0) {
+                    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    
+                    // Validazione Estensione
+                    if (!in_array($ext, $allowed_ext)) {
+                        $msg = "❌ File '$name' non supportato."; $msg_type = "error"; $upload_error = true; break;
+                    }
+                    // Validazione Dimensione
+                    if ($size > $max_size) {
+                        $msg = "❌ File '$name' troppo grande (Max 4MB)."; $msg_type = "error"; $upload_error = true; break;
+                    }
+
+                    // *** QUI CAMBIA TUTTO ***
+                    // Leggiamo il contenuto del file in binario
+                    $data = file_get_contents($tmp_name);
+                    // Lo prepariamo per PostgreSQL (Bytea)
+                    $escaped_data = pg_escape_bytea($db_conn, $data);
+                    $clean_name = pg_escape_string($db_conn, $name);
+
+                    // Salviamo nella tabella dedicata
+                    $query_att = "INSERT INTO ticket_attachments (ticket_id, file_name, file_type, file_data) 
+                                  VALUES ($ticket_id, '$clean_name', '$type', '$escaped_data')";
+                    
+                    if (!pg_query($db_conn, $query_att)) {
+                        $msg = "❌ Errore Database durante il salvataggio di '$name'."; 
+                        $msg_type = "error"; $upload_error = true; break;
+                    }
                 }
             }
         }
-    }
 
-    if (!$upload_error) {
-        $attachment_sql = empty($saved_paths) ? "NULL" : "'" . implode(';', $saved_paths) . "'";
-        $sql = "INSERT INTO tickets (user_id, title, description, priority, category, attachment_path) 
-                VALUES ($user_id, '$title', '$desc', '$priority', '$category', $attachment_sql)";
-        
-        if (pg_query($db_conn, $sql)) {
+        if (!$upload_error) {
             echo "<script>window.location.href='index.php?page=all_tickets';</script>";
             exit;
-        } else {
-            $msg = "Errore Database: " . pg_last_error($db_conn); $msg_type = "error";
         }
+    } else {
+        $msg = "Errore Creazione Ticket: " . pg_last_error($db_conn); $msg_type = "error";
     }
 }
 ?>
@@ -72,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
 
     /* La Card Principale */
     .ticket-card-wide {
-        width: 100%; max-width: 1200px; /* Widescreen */
+        width: 100%; max-width: 1200px;
         background: white;
         border-radius: 24px;
         box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.15);
@@ -98,7 +114,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
     /* Layout Interno a 2 Colonne */
     .ticket-split-body {
         display: grid;
-        grid-template-columns: 1.4fr 1fr; /* Sinistra 60%, Destra 40% */
+        grid-template-columns: 1.4fr 1fr;
         height: 100%;
         overflow: hidden;
     }
@@ -142,48 +158,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
     .upload-icon { font-size: 3rem; color: #94a3b8; margin-bottom: 15px; transition:0.3s; }
     .upload-zone-vertical:hover .upload-icon { color: var(--primary); transform: scale(1.1); }
 
-    /* File List Compact (Migliorata) */
-    .file-list-compact { 
-        flex-shrink: 0; 
-        max-height: 200px; 
-        overflow-y: auto; 
-        padding-right: 5px; /* Spazio per scrollbar lista */
-    }
+    /* File List Compact */
+    .file-list-compact { flex-shrink: 0; max-height: 200px; overflow-y: auto; padding-right: 5px; }
     
     .file-item-mini {
-        background: white; 
-        border: 1px solid #e2e8f0; 
-        padding: 12px; 
-        border-radius: 12px;
-        display: flex; 
-        align-items: center; 
-        justify-content: space-between; 
-        margin-bottom: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        transition: transform 0.2s;
+        background: white; border: 1px solid #e2e8f0; padding: 12px; 
+        border-radius: 12px; display: flex; align-items: center; justify-content: space-between; 
+        margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s;
     }
     .file-item-mini:hover { transform: translateX(5px); border-color: var(--primary); }
 
-    /* --- NUOVA CLASSE PER NOME FILE SCROLLABILE --- */
     .file-name-scroll {
-        font-weight: 600;
-        color: var(--text-main);
-        white-space: nowrap; 
-        overflow-x: hidden;      /* Di base nascosto */
-        text-overflow: ellipsis; /* Di base puntini */
-        display: block;
-        padding-bottom: 2px;
+        font-weight: 600; color: var(--text-main);
+        white-space: nowrap; overflow-x: hidden; text-overflow: ellipsis; 
+        display: block; padding-bottom: 2px;
     }
-    /* Al passaggio del mouse compare lo scroll */
-    .file-name-scroll:hover {
-        overflow-x: auto;
-        text-overflow: clip; /* Rimuove i puntini per mostrare il testo */
-    }
-    /* Scrollbar sottile e carina */
+    .file-name-scroll:hover { overflow-x: auto; text-overflow: clip; }
     .file-name-scroll::-webkit-scrollbar { height: 4px; }
     .file-name-scroll::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
     .file-name-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
-
 
     /* Footer Azioni */
     .form-footer {
@@ -316,7 +309,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
         Array.from(files).forEach(file => {
             const ext = file.name.split('.').pop().toLowerCase();
             if(validExt.includes(ext) && file.size <= 4*1024*1024) {
-                // Evita duplicati
                 if(!storedFiles.some(f => f.name === file.name && f.size === file.size)) {
                     storedFiles.push(file);
                 }
@@ -330,7 +322,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
         updateUI();
     }
 
-    // Funzione per formattare i byte in KB/MB
     function formatSize(bytes) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -347,20 +338,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
             dt.items.add(file);
             let icon = file.type.includes('pdf') ? 'fa-file-pdf' : 'fa-file-image';
             
-            // Qui uso la nuova classe file-name-scroll
             fileListContainer.innerHTML += `
                 <div class="file-item-mini">
                     <div style="display:flex; align-items:center; gap:12px; width:100%; overflow:hidden;">
                         <i class="fas ${icon}" style="color:var(--primary); font-size:1.2rem;"></i>
-                        
                         <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
-                            <div class="file-name-scroll" title="${file.name}">
-                                ${file.name}
-                            </div>
+                            <div class="file-name-scroll" title="${file.name}">${file.name}</div>
                             <span style="font-size:0.75rem; color:#94a3b8;">${formatSize(file.size)}</span>
                         </div>
                     </div>
-                    
                     <i class="fas fa-times" onclick="removeFile(${index})" style="cursor:pointer; color:#ef4444; padding:5px; margin-left:10px;"></i>
                 </div>`;
         });

@@ -1,8 +1,8 @@
 -- FILE: db_creation.sql
--- VERSIONE ORDINATA: ID 1 = Più Vecchio, ID 30 = Più Recente
+-- VERSIONE: Allegati nel DB (BLOB) + 30 Ticket di esempio
 
--- Pulizia Completa
 DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS ticket_attachments CASCADE;
 DROP TABLE IF EXISTS tickets CASCADE;
 DROP TABLE IF EXISTS faqs CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -26,7 +26,7 @@ CREATE TABLE faqs (
 );
 ALTER TABLE faqs OWNER TO www;
 
--- 3. TICKET
+-- 3. TICKET (Senza attachment_path)
 CREATE TABLE tickets (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -35,13 +35,22 @@ CREATE TABLE tickets (
     priority VARCHAR(20) CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
     status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'closed')),
     category VARCHAR(50),
-    attachment_path VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_public BOOLEAN DEFAULT FALSE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE tickets OWNER TO www;
 
--- 4. MESSAGGI
+-- 4. ALLEGATI (Nuova Tabella per i file binari)
+CREATE TABLE ticket_attachments (
+    id SERIAL PRIMARY KEY,
+    ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
+    file_name VARCHAR(255) NOT NULL,
+    file_type VARCHAR(100) NOT NULL,
+    file_data BYTEA NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE ticket_attachments OWNER TO www;
+
+-- 5. MESSAGGI
 CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
     ticket_id INTEGER REFERENCES tickets(id) ON DELETE CASCADE,
@@ -67,66 +76,34 @@ INSERT INTO faqs (question, answer) VALUES
 
 -- UTENTI
 INSERT INTO users (name, email, password, role) VALUES
-('Admin', 'admin@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'admin'); -- ID 1
+('Admin', 'admin@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'admin'),
+('Jonathan', 'jojo@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'),
+('Mattia', 'mattia@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'),
+('Antonia', 'antonia@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'),
+('Valentino', 'vale@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user');
 
-INSERT INTO users (name, email, password, role) VALUES
-('Jonathan', 'jojo@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'), -- ID 2
-('Mattia', 'mattia@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'), -- ID 3
-('Antonia', 'antonia@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'), -- ID 4
-('Valentino', 'vale@test.com', '$2b$10$6id4I3CIXFfN5PxdQF6AHucK5gpFUT.aXMKCb.KMexBRocb3EJZom', 'user'); -- ID 5
-
-
--- --- TICKET (Inseriti dal più vecchio al più recente per avere ID coerenti) ---
-
--- 1 Mese fa
+-- TICKET DI ESEMPIO (30 Record)
 INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
-(4, 'Firewall blocca porta 5432', 'Non riesco a collegarmi al DB di test.', 'high', 'Rete', 'closed', NOW() - INTERVAL '30 days');
-
--- 20 Giorni fa
-INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
+(4, 'Firewall blocca porta 5432', 'Non riesco a collegarmi al DB di test.', 'high', 'Rete', 'closed', NOW() - INTERVAL '30 days'),
 (2, 'Richiesta Tablet Grafico', 'Avrei bisogno di una Wacom per le illustrazioni.', 'low', 'Hardware', 'closed', NOW() - INTERVAL '20 days'),
-(5, 'Mouse non funziona', 'Il tasto destro non clicca più.', 'low', 'Hardware', 'closed', NOW() - INTERVAL '19 days');
-
--- 15 Giorni fa
-INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
-(3, 'Permessi Root mancanti', 'Non riesco a installare pacchetti su server dev.', 'urgent', 'Account', 'closed', NOW() - INTERVAL '15 days');
-
--- 10 Giorni fa
-INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
+(5, 'Mouse non funziona', 'Il tasto destro non clicca più.', 'low', 'Hardware', 'closed', NOW() - INTERVAL '19 days'),
+(3, 'Permessi Root mancanti', 'Non riesco a installare pacchetti su server dev.', 'urgent', 'Account', 'closed', NOW() - INTERVAL '15 days'),
 (5, 'Richiesta secondo monitor', 'Necessario per debuggare meglio.', 'low', 'Hardware', 'closed', NOW() - INTERVAL '10 days'),
-(3, 'Docker non parte', 'Il demone docker non si avvia al boot.', 'high', 'Software', 'closed', NOW() - INTERVAL '10 days');
-
--- 1 Settimana fa
-INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
+(3, 'Docker non parte', 'Il demone docker non si avvia al boot.', 'high', 'Software', 'closed', NOW() - INTERVAL '10 days'),
 (3, 'Cavo Ethernet rotto', 'La linguetta di plastica si è staccata.', 'low', 'Hardware', 'resolved', NOW() - INTERVAL '8 days'),
 (4, 'Connessione DB lenta', 'Query time > 3s su tabella users.', 'high', 'Software', 'closed', NOW() - INTERVAL '7 days'),
-(2, 'Errore esportazione PDF', 'Acrobat crasha quando salvo in alta qualità.', 'medium', 'Software', 'resolved', NOW() - INTERVAL '6 days');
-
--- 5 Giorni fa
-INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
+(2, 'Errore esportazione PDF', 'Acrobat crasha quando salvo in alta qualità.', 'medium', 'Software', 'resolved', NOW() - INTERVAL '6 days'),
 (2, 'Licenza Adobe Scaduta', 'Mi serve rinnovo Photoshop urgente.', 'high', 'Account', 'closed', NOW() - INTERVAL '5 days'),
-(5, 'Email phishing sospetta', 'Ho ricevuto una mail strana da "Amministratore".', 'urgent', 'Rete', 'resolved', NOW() - INTERVAL '5 days');
-
--- 3-4 Giorni fa
-INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
+(5, 'Email phishing sospetta', 'Ho ricevuto una mail strana da "Amministratore".', 'urgent', 'Rete', 'resolved', NOW() - INTERVAL '5 days'),
 (4, 'Password scaduta', 'Il sistema mi chiede il reset ogni 2 giorni.', 'medium', 'Account', 'resolved', NOW() - INTERVAL '4 days'),
 (2, 'Font non caricati', 'Il server non serve i file .woff2 correttamente.', 'low', 'Software', 'resolved', NOW() - INTERVAL '3 days'),
-(5, 'Creazione utente stagista', 'Serve account per il nuovo arrivato.', 'medium', 'Account', 'open', NOW() - INTERVAL '3 days');
-
--- 2 Giorni fa
-INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
+(5, 'Creazione utente stagista', 'Serve account per il nuovo arrivato.', 'medium', 'Account', 'open', NOW() - INTERVAL '3 days'),
 (4, 'Richiesta SSD esterno', 'Per archiviare i log vecchi.', 'medium', 'Hardware', 'open', NOW() - INTERVAL '2 days'),
 (3, 'Update PHP 8.2', 'Dobbiamo aggiornare i server di produzione.', 'medium', 'Software', 'open', NOW() - INTERVAL '2 days'),
-(5, 'Aggiornamento Windows bloccato', 'Resta al 99% da stamattina.', 'medium', 'Software', 'resolved', NOW() - INTERVAL '2 days');
-
--- Ieri
-INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
+(5, 'Aggiornamento Windows bloccato', 'Resta al 99% da stamattina.', 'medium', 'Software', 'resolved', NOW() - INTERVAL '2 days'),
 (2, 'Schermo sfarfalla', 'Il secondo monitor sfarfalla quando apro Figma.', 'medium', 'Hardware', 'open', NOW() - INTERVAL '1 day'),
 (3, 'Errore 500 API Login', 'Endpoint auth restituisce 500 random.', 'urgent', 'Software', 'resolved', NOW() - INTERVAL '23 hours'),
-(5, 'Wifi lento sala riunioni', 'Impossibile fare call video.', 'high', 'Rete', 'open', NOW() - INTERVAL '20 hours');
-
--- Oggi (Ultime 12 ore)
-INSERT INTO tickets (user_id, title, description, priority, category, status, created_at) VALUES 
+(5, 'Wifi lento sala riunioni', 'Impossibile fare call video.', 'high', 'Rete', 'open', NOW() - INTERVAL '20 hours'),
 (3, 'Redis Pieno', 'La cache di Redis satura la RAM.', 'high', 'Software', 'resolved', NOW() - INTERVAL '12 hours'),
 (4, 'Monitoraggi Grafana down', 'La dashboard non mostra i dati in real time.', 'medium', 'Software', 'open', NOW() - INTERVAL '6 hours'),
 (3, 'Ventola PC rumorosa', 'Sembra un elicottero in decollo.', 'low', 'Hardware', 'open', NOW() - INTERVAL '5 hours'),
@@ -138,30 +115,11 @@ INSERT INTO tickets (user_id, title, description, priority, category, status, cr
 (2, 'Accesso FTP negato', 'Non riesco a caricare i nuovi asset sul server di staging.', 'urgent', 'Rete', 'open', NOW() - INTERVAL '30 minutes'),
 (5, 'Bug upload PNG', 'Sfondo nero su immagini trasparenti.', 'medium', 'Software', 'open', NOW());
 
-
--- --- CONVERSAZIONI (Usano SELECT per trovare l'ID giusto indipendentemente dall'ordine) ---
-
--- Licenza Adobe (Jonathan - Chiuso 5gg fa)
+-- MESSAGGI
 INSERT INTO messages (ticket_id, user_id, message, created_at) VALUES
 ((SELECT id FROM tickets WHERE title = 'Licenza Adobe Scaduta'), 1, 'Ciao Jonathan, licenza rinnovata. Riavvia Creative Cloud.', NOW() - INTERVAL '4 days 23 hours'),
 ((SELECT id FROM tickets WHERE title = 'Licenza Adobe Scaduta'), 2, 'Perfetto, ora funziona. Grazie mille!', NOW() - INTERVAL '4 days 22 hours'),
-((SELECT id FROM tickets WHERE title = 'Licenza Adobe Scaduta'), 1, 'Ottimo, chiudo il ticket.', NOW() - INTERVAL '4 days 20 hours');
-
--- Errore 500 (Mattia - Risolto Ieri)
-INSERT INTO messages (ticket_id, user_id, message, created_at) VALUES
+((SELECT id FROM tickets WHERE title = 'Licenza Adobe Scaduta'), 1, 'Ottimo, chiudo il ticket.', NOW() - INTERVAL '4 days 20 hours'),
 ((SELECT id FROM tickets WHERE title = 'Errore 500 API Login'), 1, 'Mattia, puoi girarmi i log del server?', NOW() - INTERVAL '22 hours'),
 ((SELECT id FROM tickets WHERE title = 'Errore 500 API Login'), 3, 'Inviati via mail. Sembra un problema di escaping.', NOW() - INTERVAL '21 hours'),
 ((SELECT id FROM tickets WHERE title = 'Errore 500 API Login'), 1, 'Fixato e deployato in staging. Verifica per favore.', NOW() - INTERVAL '20 hours');
-
--- Backup Fallito (Antonia - Aperto 1 ora fa)
-INSERT INTO messages (ticket_id, user_id, message, created_at) VALUES
-((SELECT id FROM tickets WHERE title = 'Backup fallito'), 1, 'Sto controllando lo spazio su disco, potrebbe essere pieno.', NOW() - INTERVAL '10 minutes');
-
--- Phishing (Valentino - Risolto 5gg fa)
-INSERT INTO messages (ticket_id, user_id, message, created_at) VALUES
-((SELECT id FROM tickets WHERE title = 'Email phishing sospetta'), 1, 'NON CLICCARE SUL LINK. È un tentativo di phishing noto.', NOW() - INTERVAL '5 days'),
-((SELECT id FROM tickets WHERE title = 'Email phishing sospetta'), 5, 'Ricevuto, cestinata subito.', NOW() - INTERVAL '5 days');
-
--- Monitor (Valentino - Chiuso 10gg fa)
-INSERT INTO messages (ticket_id, user_id, message, created_at) VALUES
-((SELECT id FROM tickets WHERE title = 'Richiesta secondo monitor'), 1, 'Approvato. Passa in magazzino.', NOW() - INTERVAL '9 days');
