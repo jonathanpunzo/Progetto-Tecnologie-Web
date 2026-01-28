@@ -1,4 +1,15 @@
 <?php
+session_start();
+
+// Se l'utente non è loggato, reindirizza al login
+if (!isset($_SESSION['user_id'])) {
+    // Usa ../ perché auth.php è nella cartella superiore (root)
+    header("Location: ../auth.php");
+    exit;
+}
+?>
+
+<?php
 // FILE: pages/dashboard.php
 
 // 0. DATI UTENTE CORRENTE
