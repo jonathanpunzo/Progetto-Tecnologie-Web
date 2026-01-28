@@ -153,7 +153,7 @@ if (!isset($_SESSION['user_id'])) {
 
     <div class="team-card">
         <div class="member-img-wrapper">
-            <img src="img/Joanthan.png" alt="Jonathan" class="member-img">
+            <img src="img/Jonathan.png" alt="Jonathan" class="member-img">
         </div>
         <h3 class="member-name">Jonathan Punzo</h3>
         <span class="member-role">Frontend Designer</span>
