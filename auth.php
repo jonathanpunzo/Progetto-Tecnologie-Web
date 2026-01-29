@@ -281,11 +281,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="hidden" name="action" value="register">
                     <div class="input-group">
                         <i class="far fa-user"></i>
-                        <input type="text" name="reg_name" placeholder="Nome e Cognome" required>
+                        <input type="text" name="reg_name" placeholder="Nome e Cognome" 
+                            value="<?php echo isset($_POST['reg_name']) ? htmlspecialchars($_POST['reg_name']) : ''; ?>" required>
                     </div>
                     <div class="input-group">
                         <i class="far fa-envelope"></i>
-                        <input type="email" name="reg_email" placeholder="Email aziendale" required>
+                        <input type="email" name="reg_email" placeholder="Email aziendale" 
+                            value="<?php echo isset($_POST['reg_email']) ? htmlspecialchars($_POST['reg_email']) : ''; ?>" required>
                     </div>
                     <div class="input-group">
                         <i class="fas fa-lock"></i>
