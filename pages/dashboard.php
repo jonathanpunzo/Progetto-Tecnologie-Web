@@ -290,8 +290,11 @@ $recent_tickets = pg_query($db_conn, $query_recent);
         </div>
         <div style="display: flex; flex-direction: column; justify-content: center; gap: 15px; flex: 1;">
             
-            <button class="action-btn btn-outline" onclick="window.location.href='index.php?page=new_ticket'">
-                <i class="fas fa-plus-circle" style="color:var(--primary);"></i> Crea Ticket
+            <button class="action-btn btn-outline" 
+                    onclick="<?php echo $is_admin ? '' : "window.location.href='index.php?page=new_ticket'"; ?>" 
+                    >
+                <i class="fas fa-plus-circle" style="color:var(--primary);"></i> 
+                <?php echo $is_admin ? 'Crea Annuncio' : 'Crea Ticket'; ?>
             </button>
             
             <button class="action-btn btn-outline">
