@@ -184,8 +184,10 @@ body.page-community {
 .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; flex-grow: 1; }
 .span-2 { grid-column: span 2; }
 
-@media (max-height: 950px) { .page-container { zoom: 0.90; } }
-@media (max-height: 750px) { .page-container { zoom: 0.80; } }
+
+@media (max-height: 1000px) { .page-container { zoom: 0.9; } }
+@media (max-height: 850px) { .page-container { zoom: 0.8; } }
+@media (max-height: 700px) { .page-container { zoom: 0.7; } }
 
 /* ======================================================
    --- BOTTONI GLOBALI ---

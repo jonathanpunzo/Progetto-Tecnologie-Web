@@ -146,6 +146,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
         border-left: 1px solid #f1f5f9;
         padding: 40px;
         display: flex; flex-direction: column;
+        min-width: 300px; 
     }
 
     /* Input Styling */
@@ -213,6 +214,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_ticket'])) {
         .ticket-split-body { grid-template-columns: 1fr; overflow-y: auto; }
         .col-right { border-left: none; border-top: 1px solid #f1f5f9; }
         .upload-zone-vertical { min-height: 150px; }
+    }
+
+    /*Bilanciamento visivo per il Mac*/
+    @media (min-width: 1001px) and (max-width: 1450px) {
+        .ticket-split-body {
+            grid-template-columns: 1fr 1fr !important; 
+        }
+        .col-left, .col-right {
+            padding: 25px !important; /* Era 40px */
+        }
     }
 </style>
 
